@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoInsight — Identidad Visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;text-wrap:pretty}
+  input,select,button,textarea{font-family:inherit}
+  input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+  input:focus,select:focus{outline:none}
+  img,svg{display:block;max-width:100%}
+
+  @keyframes slideUp{from{transform:translateY(18px)}to{transform:translateY(0)}}
+  @keyframes cardReveal{from{transform:rotate(-3deg) translateY(22px) scale(0.94)}to{transform:rotate(-3deg) translateY(0) scale(1)}}
+  @keyframes cardFloat{0%,100%{transform:rotate(-3deg) translateY(0)}50%{transform:rotate(-3deg) translateY(-9px)}}
+
+  .ha1{animation:slideUp .6s ease-out}
+  .ha2{animation:slideUp .65s .08s ease-out}
+  .ha3{animation:slideUp .65s .16s ease-out}
+  .ha4{animation:slideUp .6s .24s ease-out}
+  .ha5{animation:slideUp .6s .32s ease-out}
+  .dash-card{animation:cardReveal .85s .3s ease-out forwards,cardFloat 5.5s 1.2s ease-in-out infinite}
+
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(128,128,128,.3);border-radius:3px}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @keyframes flashNew{0%{background-color:rgba(77,184,122,.12)}100%{background-color:transparent}}
+  .flash-new{animation:flashNew 2.5s ease-out}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- ═══ THEMES ═══ -->
+<script type="text/babel">
+const THEMES = {
+  navy: {
+    id:'navy', label:'Navy Command', tagline:'Oscuro · Marca fiel', dot:'#4DB87A', dark:true,
+    bg:'#0D1C32', surface:'#122040', card:'#192C52', cardHover:'#1F3561',
+    border:'#223660', borderStrong:'#2C4880',
+    accent:'#4DB87A', accentDim:'rgba(77,184,122,.13)', accent2:'#3B8FDB', accent2Dim:'rgba(59,143,219,.13)',
+    text:'#E6EDF8', textMuted:'#7A9BBF', textFaint:'#3A5578',
+    cta:'#4DB87A', ctaText:'#0A1820',
+    positive:'#4DB87A', warning:'#D4973A', warningDim:'rgba(212,151,58,.13)', critical:'#D4503A',
+    heroBg:'radial-gradient(ellipse 90% 70% at 72% 28%, rgba(77,184,122,.08) 0%, transparent 55%), radial-gradient(ellipse 60% 50% at 10% 80%, rgba(59,143,219,.07) 0%, transparent 50%), #0D1C32',
+  },
+  forest: {
+    id:'forest', label:'Forest Carbon', tagline:'Oscuro · Natural', dot:'#5DCF8A', dark:true,
+    bg:'#0B0F0C', surface:'#111A14', card:'#162019', cardHover:'#1C2920',
+    border:'#1E3426', borderStrong:'#2D4A35',
+    accent:'#4DB87A', accentDim:'rgba(77,184,122,.13)', accent2:'#3B8FDB', accent2Dim:'rgba(59,143,219,.13)',
+    text:'#EBF0EC', textMuted:'#7A9A82', textFaint:'#3A5542',
+    cta:'#4DB87A', ctaText:'#080E09',
+    positive:'#4DB87A', warning:'#D4973A', warningDim:'rgba(212,151,58,.13)', critical:'#D4503A',
+    heroBg:'radial-gradient(ellipse 80% 60% at 70% 28%, rgba(77,184,122,.09) 0%, transparent 58%), radial-gradient(ellipse 50% 40% at 18% 78%, rgba(59,143,219,.06) 0%, transparent 48%), repeating-linear-gradient(0deg,transparent 0,transparent 47px,rgba(255,255,255,.017) 47px,rgba(255,255,255,.017) 48px), repeating-linear-gradient(90deg,transparent 0,transparent 47px,rgba(255,255,255,.017) 47px,rgba(255,255,255,.017) 48px), #0B0F0C',
+  },
+  nordic: {
+    id:'nordic', label:'Nordic Light', tagline:'Claro · Corporativo', dot:'#1E6641', dark:false,
+    bg:'#F3F5F0', surface:'#FFFFFF', card:'#ECEEED', cardHover:'#E5E8E3',
+    border:'#D5DBD2', borderStrong:'#B4BEB0',
+    accent:'#1E6641', accentDim:'rgba(30,102,65,.10)', accent2:'#1D5FA3', accent2Dim:'rgba(29,95,163,.10)',
+    text:'#0E1A10', textMuted:'#50705A', textFaint:'#88A090',
+    cta:'#1E6641', ctaText:'#FFFFFF',
+    positive:'#1E6641', warning:'#9B6A1A', warningDim:'rgba(155,106,26,.10)', critical:'#9B3A2A',
+    heroBg:'radial-gradient(ellipse 65% 55% at 84% 18%, rgba(30,102,65,.07) 0%, transparent 52%), radial-gradient(ellipse 42% 35% at 88% 78%, rgba(29,95,163,.05) 0%, transparent 42%), #F3F5F0',
+  },
+};
+window.THEMES = THEMES;
+</script>
+
+<!-- ═══ HEADER ═══ -->
+<script type="text/babel">
+function EcoHeader({t, theme, setTheme}) {
+  const [scrolled, setScrolled] = React.useState(false);
+  React.useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 28);
+    window.addEventListener('scroll', fn);
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
+  const nav = ['Plataforma','Calculadora','Noticias','Marketplace'];
+  const logoBox = {background: t.dark ? 'rgba(255,255,255,.94)' : 'transparent', borderRadius:8, padding: t.dark ? '3px 4px' : 0, display:'flex', alignItems:'center'};
+  return (
+    <header style={{position:'fixed',top:0,left:0,right:0,zIndex:200,background:scrolled?t.bg+'F4':'transparent',backdropFilter:scrolled?'blur(18px)':'none',borderBottom:`1px solid ${scrolled?t.border:'transparent'}`,transition:'all .3s'}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px',display:'flex',alignItems:'center',justifyContent:'space-between',height:66}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <div style={logoBox}><img src="uploads/logo_file-1781309583515.png" alt="EcoInsight" style={{height:32,width:'auto'}}/></div>
+          <span style={{fontFamily:'Plus Jakarta Sans,sans-serif',fontWeight:800,fontSize:20,color:t.text,letterSpacing:'-.022em'}}>
+            <span style={{color:t.accent}}>Eco</span>Insight
+          </span>
+        </div>
+        <nav style={{display:'flex',gap:2}}>
+          {nav.map(l => (
+            <a key={l} href={l==='Calculadora'?'#calculadora':l==='Marketplace'?'#marketplace':l==='Noticias'?'#noticias':'#'}
+              style={{color:t.textMuted,textDecoration:'none',fontSize:14,fontWeight:500,padding:'6px 11px',borderRadius:7,transition:'all .18s',fontFamily:'DM Sans,sans-serif'}}
+              onMouseEnter={e=>{e.currentTarget.style.color=t.text;e.currentTarget.style.background=t.border}}
+              onMouseLeave={e=>{e.currentTarget.style.color=t.textMuted;e.currentTarget.style.background='transparent'}}
+            >{l}</a>
+          ))}
+        </nav>
+        <div style={{display:'flex',alignItems:'center',gap:14}}>
+          <div style={{display:'flex',gap:5,alignItems:'center'}} title="Cambiar variación visual">
+            {Object.values(window.THEMES).map(th => (
+              <button key={th.id} onClick={()=>setTheme(th.id)} title={`${th.label} · ${th.tagline}`}
+                style={{width:theme===th.id?22:10,height:10,borderRadius:5,background:th.dot,border:'none',cursor:'pointer',opacity:theme===th.id?1:.38,transition:'all .28s',padding:0}}
+              />
+            ))}
+          </div>
+
+        </div>
+      </div>
+    </header>
+  );
+}
+window.EcoHeader = EcoHeader;
+</script>
+
+<!-- ═══ HERO ═══ -->
+<script type="text/babel">
+function EcoHero({t}) {
+  const DashCard = () => (
+    <div className="dash-card" style={{background:t.card,border:`1px solid ${t.borderStrong}`,borderRadius:20,padding:'24px 26px',width:308,boxShadow:t.dark?'0 40px 90px rgba(0,0,0,.5)':'0 40px 80px rgba(0,0,0,.13)'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+        <div style={{display:'flex',alignItems:'center',gap:7}}>
+          <div style={{width:7,height:7,borderRadius:'50%',background:t.positive}}/>
+          <span style={{fontSize:10,fontWeight:700,color:t.textMuted,textTransform:'uppercase',letterSpacing:'.09em',fontFamily:'Plus Jakarta Sans'}}>Dashboard ESG · 2024</span>
+        </div>
+        <span style={{fontSize:10,color:t.textFaint,fontFamily:'DM Mono,monospace'}}>GHG Protocol</span>
+      </div>
+      <div style={{fontSize:10,color:t.textMuted,textTransform:'uppercase',letterSpacing:'.07em',fontWeight:600,marginBottom:4}}>Total Emisiones GEI</div>
+      <div style={{display:'flex',alignItems:'baseline',gap:10,marginBottom:18}}>
+        <span style={{fontSize:36,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1}}>847.3</span>
+        <span style={{fontSize:11,color:t.textMuted,fontFamily:'DM Mono'}}>tCO₂e/año</span>
+        <span style={{background:t.positive+'25',color:t.positive,padding:'3px 8px',borderRadius:20,fontSize:11,fontWeight:700}}>↓12.4%</span>
+      </div>
+      {[['Alcance 1',412,t.accent],['Alcance 2',287,t.accent2],['Alcance 3',148,t.warning]].map(([l,v,c])=>(
+        <div key={l} style={{marginBottom:11}}>
+          <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}>
+            <span style={{fontSize:11,color:t.textMuted,display:'flex',alignItems:'center',gap:5}}>
+              <span style={{width:6,height:6,borderRadius:'50%',background:c,display:'inline-block'}}/>
+              {l}
+            </span>
+            <span style={{fontSize:11,fontFamily:'DM Mono',color:t.text}}>{v} t</span>
+          </div>
+          <div style={{height:4,borderRadius:2,background:t.border}}>
+            <div style={{height:'100%',width:`${Math.round(v/847*100)}%`,background:c,borderRadius:2}}/>
+          </div>
+        </div>
+      ))}
+      <div style={{marginTop:14,paddingTop:14,borderTop:`1px solid ${t.border}`,display:'flex',alignItems:'center',gap:8}}>
+        <span style={{background:t.positive+'22',color:t.positive,padding:'2px 8px',borderRadius:5,fontSize:11,fontWeight:800,fontFamily:'Plus Jakarta Sans'}}>A</span>
+        <span style={{fontSize:11,color:t.textMuted}}>Clasificación ESG · En objetivo anual</span>
+      </div>
+    </div>
+  );
+  return (
+    <section style={{minHeight:'100vh',display:'flex',alignItems:'center',background:t.heroBg,paddingTop:120,paddingBottom:80}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px',width:'100%'}}>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 340px',gap:56,alignItems:'center'}}>
+          <div>
+            <div className="ha1" style={{display:'inline-flex',alignItems:'center',gap:8,background:t.accentDim,border:`1px solid ${t.accent}35`,borderRadius:20,padding:'5px 14px',marginBottom:26,whiteSpace:'nowrap'}}>
+              <span style={{width:6,height:6,borderRadius:'50%',background:t.accent,display:'inline-block',flexShrink:0}}/>
+              <span style={{color:t.accent,fontSize:11,fontWeight:700,letterSpacing:'.09em',textTransform:'uppercase',fontFamily:'Plus Jakarta Sans'}}>Climate Tech · ESG · LATAM</span>
+            </div>
+            <h1 className="ha2" style={{fontSize:58,fontWeight:800,lineHeight:1.08,letterSpacing:'-.03em',fontFamily:'Plus Jakarta Sans,sans-serif',color:t.text,marginBottom:22}}>
+              Transformando<br/>datos ambientales<br/>en <em style={{fontStyle:'normal',color:t.accent}}>decisiones</em><br/>sostenibles.
+            </h1>
+            <p className="ha3" style={{fontSize:17,lineHeight:1.67,color:t.textMuted,marginBottom:36,maxWidth:510,fontFamily:'DM Sans'}}>
+              La plataforma que unifica medición de carbono, reporting ESG y soluciones ambientales para minería, construcción y agroindustria.
+            </p>
+            <div className="ha4" style={{display:'flex',gap:12,marginBottom:48,flexWrap:'wrap'}}>
+              <button style={{background:t.cta,color:t.ctaText,border:'none',borderRadius:10,padding:'14px 28px',fontSize:15,fontWeight:700,cursor:'pointer',fontFamily:'Plus Jakarta Sans',letterSpacing:'-.01em',transition:'opacity .2s'}}
+                onMouseEnter={e=>e.currentTarget.style.opacity='.82'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
+                Explorar Plataforma →
+              </button>
+              <a href="#calculadora" style={{display:'flex',alignItems:'center',gap:8,color:t.text,border:`1.5px solid ${t.borderStrong}`,borderRadius:10,padding:'13px 22px',fontSize:15,fontWeight:600,cursor:'pointer',textDecoration:'none',fontFamily:'Plus Jakarta Sans',transition:'all .2s'}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor=t.accent;e.currentTarget.style.color=t.accent}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor=t.borderStrong;e.currentTarget.style.color=t.text}}>
+                Calcular Emisiones
+              </a>
+            </div>
+            <div className="ha5" style={{display:'flex',gap:28,flexWrap:'wrap'}}>
+              {[['2,400+','Empresas'],['28','Países'],['12M','tCO₂e analizadas'],['WCAG AA','Accesibilidad']].map(([v,l])=>(
+                <div key={l} style={{borderLeft:`2px solid ${t.borderStrong}`,paddingLeft:14}}>
+                  <div style={{fontSize:20,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,letterSpacing:'-.02em'}}>{v}</div>
+                  <div style={{fontSize:11,color:t.textMuted,marginTop:2}}>{l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{display:'flex',justifyContent:'center',paddingTop:30}}><DashCard/></div>
+        </div>
+      </div>
+    </section>
+  );
+}
+window.EcoHero = EcoHero;
+</script>
+
+<!-- ═══ CALCULATOR ═══ -->
+<script type="text/babel">
+function EcoCalculator({t}) {
+  const [country, setCountry] = React.useState('chile');
+  const [industry, setIndustry] = React.useState('mineria');
+  const [v, setV] = React.useState({diesel:'',gasolina:'',gnl:'',elec:'',vuelos:'',flete:''});
+  const [open, setOpen] = React.useState('s1');
+  const upd = k => e => setV({...v,[k]:e.target.value});
+  const n = k => parseFloat(v[k])||0;
+  const grids={chile:.315,peru:.274,colombia:.179,argentina:.319,brasil:.074,mexico:.452,latam:.319};
+  const s1=(n('diesel')*2.68+n('gasolina')*2.31+n('gnl')*1.89)/1000;
+  const s2=(n('elec')*(grids[country]||.319))/1000;
+  const s3=(n('vuelos')*.255+n('flete')*.168)/1000;
+  const tot=s1+s2+s3;
+  const p=w=>tot>0?Math.max(1,Math.round(w/tot*100)):0;
+  const gr=tot<10?{g:'A',c:t.positive}:tot<50?{g:'B',c:'#82C440'}:tot<200?{g:'C',c:'#C9BB1A'}:tot<500?{g:'D',c:t.warning}:tot<1000?{g:'E',c:'#D46A3A'}:{g:'F',c:t.critical};
+  const iSel={width:'100%',background:t.surface,border:`1px solid ${t.border}`,color:t.text,borderRadius:8,padding:'10px 12px',fontSize:13,fontFamily:'DM Sans',cursor:'pointer'};
+  const Field=({label,k,unit})=>(
+    <div>
+      <div style={{fontSize:10,color:t.textMuted,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',marginBottom:5,fontFamily:'Plus Jakarta Sans'}}>{label}</div>
+      <div style={{display:'flex',gap:6}}>
+        <input type="number" min="0" value={v[k]} onChange={upd(k)} placeholder="0"
+          style={{flex:1,background:t.surface,border:`1px solid ${t.border}`,color:t.text,borderRadius:8,padding:'10px 12px',fontSize:13,fontFamily:'DM Mono,monospace',outline:'none',transition:'border-color .2s'}}
+          onFocus={e=>e.target.style.borderColor=t.accent} onBlur={e=>e.target.style.borderColor=t.border}/>
+        <span style={{padding:'10px',background:t.card,border:`1px solid ${t.border}`,borderRadius:8,color:t.textMuted,fontSize:11,fontFamily:'DM Mono',display:'flex',alignItems:'center',whiteSpace:'nowrap'}}>{unit}</span>
+      </div>
+    </div>
+  );
+  const Scope=({id,title,sub,color,val,children})=>(
+    <div style={{border:`1px solid ${open===id?color+'55':t.border}`,borderRadius:12,overflow:'hidden',marginBottom:10,transition:'border-color .2s'}}>
+      <button onClick={()=>setOpen(open===id?null:id)} style={{width:'100%',padding:'14px 18px',background:open===id?color+'13':t.surface,border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between',transition:'background .2s'}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <div style={{width:8,height:8,borderRadius:'50%',background:color}}/>
+          <div style={{textAlign:'left'}}>
+            <div style={{fontSize:14,fontWeight:600,color:t.text,fontFamily:'Plus Jakarta Sans'}}>{title}</div>
+            <div style={{fontSize:11,color:t.textMuted}}>{sub}</div>
+          </div>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          {val>0&&<span style={{fontSize:12,color,fontFamily:'DM Mono',fontWeight:600}}>{val.toFixed(1)} t</span>}
+          <span style={{color:t.textMuted,transform:open===id?'rotate(180deg)':'none',transition:'transform .22s',display:'block'}}>▾</span>
+        </div>
+      </button>
+      {open===id&&<div style={{padding:18,background:t.card,display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>{children}</div>}
+    </div>
+  );
+  return (
+    <section id="calculadora" style={{background:t.bg,padding:'96px 0',borderTop:`1px solid ${t.border}`}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+        <div style={{marginBottom:50}}>
+          <div style={{display:'inline-flex',alignItems:'center',gap:8,background:t.accentDim,border:`1px solid ${t.accent}35`,borderRadius:20,padding:'5px 14px',marginBottom:18}}>
+            <span style={{color:t.accent,fontSize:11,fontWeight:700,letterSpacing:'.09em',textTransform:'uppercase',fontFamily:'Plus Jakarta Sans',whiteSpace:'nowrap'}}>GHG Protocol · Alcances 1 · 2 · 3</span>
+          </div>
+          <h2 style={{fontSize:44,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1.1,marginBottom:14,letterSpacing:'-.022em'}}>Calculadora de<br/>Emisiones GEI</h2>
+          <p style={{fontSize:17,color:t.textMuted,maxWidth:560,lineHeight:1.65,fontFamily:'DM Sans'}}>Mide la huella de carbono de tu empresa en tiempo real. Factores de emisión oficiales para Chile, Perú, Colombia, Argentina y más.</p>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 355px',gap:32,alignItems:'start'}}>
+          <div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:18}}>
+              {[['Sector / Industria','industry',setIndustry,industry,[['mineria','Minería'],['construccion','Construcción'],['agro','Agroindustria'],['manufactura','Manufactura'],['transporte','Transporte & Logística'],['servicios','Servicios & Consultoría']]],
+                ['Factor red eléctrica','country',setCountry,country,[['chile','Chile · 0.315 kg/kWh'],['peru','Perú · 0.274 kg/kWh'],['colombia','Colombia · 0.179 kg/kWh'],['argentina','Argentina · 0.319 kg/kWh'],['brasil','Brasil · 0.074 kg/kWh'],['mexico','México · 0.452 kg/kWh'],['latam','LATAM prom. · 0.319 kg/kWh']]]
+              ].map(([lbl,_,fn,val,opts])=>(
+                <div key={lbl}>
+                  <div style={{fontSize:10,color:t.textMuted,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',marginBottom:5,fontFamily:'Plus Jakarta Sans'}}>{lbl}</div>
+                  <select value={val} onChange={e=>fn(e.target.value)} style={iSel}>
+                    {opts.map(([k,l])=><option key={k} value={k}>{l}</option>)}
+                  </select>
+                </div>
+              ))}
+            </div>
+            <Scope id="s1" title="Alcance 1 · Emisiones Directas" sub="Combustión propia: instalaciones y vehículos" color={t.accent} val={s1}>
+              <Field label="Diésel" k="diesel" unit="L/año"/>
+              <Field label="Gasolina" k="gasolina" unit="L/año"/>
+              <Field label="Gas natural" k="gnl" unit="m³/año"/>
+              <div style={{gridColumn:'span 2',padding:'10px 14px',background:t.accent+'12',borderRadius:8,fontSize:12,color:t.textMuted,fontFamily:'DM Sans'}}>
+                Factor diésel: <strong style={{color:t.accent,fontFamily:'DM Mono'}}>2.68</strong> · Gasolina: <strong style={{color:t.accent,fontFamily:'DM Mono'}}>2.31</strong> · GNL: <strong style={{color:t.accent,fontFamily:'DM Mono'}}>1.89</strong> kgCO₂e/unidad
+              </div>
+            </Scope>
+            <Scope id="s2" title="Alcance 2 · Energía Comprada" sub="Electricidad, vapor y calor adquiridos" color={t.accent2} val={s2}>
+              <div style={{gridColumn:'span 2'}}>
+                <Field label="Consumo eléctrico" k="elec" unit="kWh/año"/>
+                <div style={{marginTop:10,padding:'10px 14px',background:t.accent2+'12',borderRadius:8,fontSize:12,color:t.textMuted}}>
+                  Factor red: <strong style={{color:t.accent2,fontFamily:'DM Mono'}}>{grids[country]||.319} kgCO₂e/kWh</strong> · País seleccionado: <strong style={{color:t.accent2}}>{country}</strong>
+                </div>
+              </div>
+            </Scope>
+            <Scope id="s3" title="Alcance 3 · Cadena de Valor" sub="Viajes de negocio y transporte de carga" color={t.warning} val={s3}>
+              <Field label="Vuelos de negocio" k="vuelos" unit="km/año"/>
+              <Field label="Flete de carga" k="flete" unit="ton-km/año"/>
+            </Scope>
+          </div>
+          {/* Results Panel */}
+          <div style={{position:'sticky',top:86,background:t.card,border:`1px solid ${t.border}`,borderRadius:20,padding:26}}>
+            <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:t.textMuted,marginBottom:20,fontFamily:'Plus Jakarta Sans'}}>Resultado estimado</div>
+            <div style={{display:'flex',justifyContent:'center',marginBottom:20}}>
+              <div style={{position:'relative',width:150,height:150}}>
+                <div style={{width:150,height:150,borderRadius:'50%',
+                  background:tot>0?`conic-gradient(${t.accent} 0% ${p(s1)}%,${t.accent2} ${p(s1)}% ${p(s1)+p(s2)}%,${t.warning} ${p(s1)+p(s2)}% 100%)`:t.border,
+                  WebkitMaskImage:'radial-gradient(transparent 49px, black 50px)',maskImage:'radial-gradient(transparent 49px, black 50px)',
+                  transition:'background .55s'}}/>
+                <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',textAlign:'center'}}>
+                  <div style={{fontSize:tot>999?18:24,fontWeight:800,color:t.text,fontFamily:'Plus Jakarta Sans',lineHeight:1}}>{tot>0?tot.toFixed(1):'—'}</div>
+                  <div style={{fontSize:9,color:t.textMuted,fontFamily:'DM Mono',marginTop:2}}>tCO₂e/año</div>
+                </div>
+              </div>
+            </div>
+            {tot>0&&(
+              <div style={{textAlign:'center',marginBottom:18,padding:'10px 0',borderTop:`1px solid ${t.border}`,borderBottom:`1px solid ${t.border}`}}>
+                <span style={{display:'inline-flex',alignItems:'center',gap:8,fontSize:13,color:t.textMuted,fontFamily:'DM Sans'}}>
+                  Clasificación ESG:
+                  <span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:30,height:30,borderRadius:7,background:gr.c+'22',border:`1px solid ${gr.c}44`,color:gr.c,fontWeight:800,fontSize:15,fontFamily:'Plus Jakarta Sans'}}>{gr.g}</span>
+                </span>
+              </div>
+            )}
+            {[['Alcance 1',s1,t.accent],['Alcance 2',s2,t.accent2],['Alcance 3',s3,t.warning]].map(([l,val,c])=>(
+              <div key={l} style={{marginBottom:12}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:5}}>
+                  <span style={{fontSize:11,color:t.textMuted,display:'flex',alignItems:'center',gap:5}}>
+                    <span style={{width:7,height:7,borderRadius:'50%',background:c,display:'inline-block'}}/>{l}
+                  </span>
+                  <span style={{fontSize:11,fontFamily:'DM Mono',color:t.text}}>{val.toFixed(2)} t</span>
+                </div>
+                <div style={{height:5,borderRadius:3,background:t.border,overflow:'hidden'}}>
+                  <div style={{height:'100%',width:tot>0?`${p(val)}%`:'0%',background:c,borderRadius:3,transition:'width .55s'}}/>
+                </div>
+              </div>
+            ))}
+            <button style={{marginTop:20,width:'100%',padding:14,background:t.cta,color:t.ctaText,border:'none',borderRadius:10,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'Plus Jakarta Sans',transition:'opacity .2s'}}
+              onMouseEnter={e=>e.currentTarget.style.opacity='.82'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
+              ↓ Descargar Reporte PDF
+            </button>
+            <p style={{textAlign:'center',fontSize:10,color:t.textFaint,marginTop:8,lineHeight:1.5,fontFamily:'DM Sans'}}>Metodología GHG Protocol Corporate Standard</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+window.EcoCalculator = EcoCalculator;
+</script>
+
+<!-- ═══ MARKETPLACE ═══ -->
+<script type="text/babel">
+function EcoMarketplace({t}) {
+  const [cat, setCat] = React.useState('todos');
+  const [hov, setHov] = React.useState(null);
+  const CATS=[['todos','Todos'],['esg','ESG'],['carbono','Carbono'],['plan','Plan Ambiental']];
+  const TPS=[
+    {id:1,name:'Reporte Huella de Carbono',desc:'Template GHG Protocol completo para Alcances 1, 2 y 3 con factores LATAM',price:24,rating:4.9,rev:147,cat:'carbono',badge:'Más vendido',bc:t.accent,th:'carbon'},
+    {id:2,name:'Dashboard ESG Empresarial',desc:'Panel de indicadores ESG con KPIs ambientales, sociales y de gobernanza',price:49,rating:4.8,rev:93,cat:'esg',badge:'Premium',bc:t.accent2,th:'esg'},
+    {id:3,name:'Inventario GEI – GHG Protocol',desc:'Inventario de gases de efecto invernadero con factores de emisión LATAM',price:34,rating:4.7,rev:78,cat:'carbono',badge:null,th:'inventory'},
+    {id:4,name:'Plan de Gestión Ambiental',desc:'PGA estructurado con cronograma, KPIs y seguimiento de compromisos ESG',price:29,rating:4.6,rev:52,cat:'plan',badge:'Nuevo',bc:t.warning,th:'plan'},
+    {id:5,name:'Análisis de Ciclo de Vida',desc:'Template ACV simplificado para evaluación ambiental de productos',price:45,rating:4.8,rev:41,cat:'plan',badge:null,th:'lcv'},
+    {id:6,name:'Reporte de Sostenibilidad',desc:'Reporte anual ESG alineado con GRI Standards y marco del TCFD',price:39,rating:4.9,rev:119,cat:'esg',badge:'GRI Alineado',bc:t.positive,th:'report'},
+  ];
+  const shown=cat==='todos'?TPS:TPS.filter(x=>x.cat===cat);
+  const [a,b,w,bg,brd]=[t.accent,t.accent2,t.warning,t.card,t.border];
+  const TH={
+    carbon:<svg viewBox="0 0 200 116" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="116" fill={bg}/><circle cx="138" cy="60" r="35" fill="none" stroke={brd} strokeWidth="14"/><circle cx="138" cy="60" r="35" fill="none" stroke={a} strokeWidth="14" strokeDasharray="88 132" strokeLinecap="round" transform="rotate(-90 138 60)"/><circle cx="138" cy="60" r="35" fill="none" stroke={b} strokeWidth="14" strokeDasharray="55 165" strokeDashoffset="-88" strokeLinecap="round" transform="rotate(-90 138 60)"/>{[0,1,2,3,4,5].map(i=><rect key={i} x={12} y={14+i*15} width={66+i*2} height={7} rx={3} fill={brd} opacity={.52+i*.06}/>)}</svg>,
+    esg:<svg viewBox="0 0 200 116" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="116" fill={bg}/><rect x={12} y={14} width={82} height={7} rx={3} fill={a} opacity={.7}/>{[0,1,2,3,4].map(i=><g key={i}><rect x={22+i*34} y={84-i*10} width={13} height={24+i*10} rx={3} fill={a} opacity={.75}/><rect x={37+i*34} y={94-i*6} width={11} height={14+i*6} rx={3} fill={b} opacity={.65}/></g>)}<line x1={12} y1={108} x2={188} y2={108} stroke={brd} strokeWidth={1}/></svg>,
+    inventory:<svg viewBox="0 0 200 116" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="116" fill={bg}/><rect x={12} y={12} width={176} height={12} rx={3} fill={a} opacity={.18}/>{[0,1,2,3,4,5,6].map(i=><g key={i} transform={`translate(0,${30+i*11})`}><rect x={12} y={0} width={50} height={6} rx={2} fill={brd} opacity={.65}/><rect x={72} y={0} width={26} height={6} rx={2} fill={a} opacity={.3+i*.07}/><rect x={110} y={0} width={26} height={6} rx={2} fill={b} opacity={.38}/><rect x={148} y={0} width={40} height={6} rx={2} fill={brd} opacity={.45}/></g>)}</svg>,
+    plan:<svg viewBox="0 0 200 116" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="116" fill={bg}/><rect x={12} y={12} width={88} height={8} rx={3} fill={a} opacity={.68}/><line x1={30} y1={30} x2={30} y2={106} stroke={brd} strokeWidth={2}/>{[0,1,2,3,4].map(i=><g key={i} transform={`translate(0,${32+i*15})`}><circle cx={30} cy={0} r={5} fill={i<2?a:brd} opacity={i<2?.88:.38}/><rect x={44} y={-4} width={84-i*8} height={8} rx={3} fill={i<2?a:brd} opacity={i<2?.28:.18}/></g>)}</svg>,
+    lcv:<svg viewBox="0 0 200 116" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="116" fill={bg}/><circle cx={100} cy={60} r={36} fill="none" stroke={brd} strokeWidth={1}/>{[[a,66,143,0],[b,46,163,-66],[w,36,173,-112]].map(([col,d,tot,off],i)=><circle key={i} cx={100} cy={60} r={36} fill="none" stroke={col} strokeWidth={3} strokeDasharray={`${d} ${tot}`} strokeDashoffset={off} strokeLinecap="round" transform="rotate(-90 100 60)" opacity={.88}/>)}{[0,1,2,3].map(i=>{const ang=(i*90-90)*Math.PI/180;return <circle key={i} cx={100+36*Math.cos(ang)} cy={60+36*Math.sin(ang)} r={5} fill={bg} stroke={a} strokeWidth={2}/>;})}</svg>,
+    report:<svg viewBox="0 0 200 116" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="116" fill={bg}/><rect x={12} y={12} width={176} height={34} rx={5} fill={a} opacity={.1}/><rect x={20} y={18} width={72} height={9} rx={3} fill={a} opacity={.78}/><rect x={20} y={31} width={100} height={5} rx={2} fill={brd}/><rect x={20} y={40} width={72} height={4} rx={2} fill={brd} opacity={.5}/><rect x={12} y={54} width={80} height={50} rx={4} fill={brd} opacity={.28}/><rect x={100} y={54} width={88} height={22} rx={3} fill={brd} opacity={.48}/><rect x={100} y={82} width={88} height={8} rx={3} fill={a} opacity={.18}/><rect x={100} y={96} width={55} height={5} rx={2} fill={brd} opacity={.38}/></svg>,
+  };
+  return (
+    <section id="marketplace" style={{background:t.bg,padding:'96px 0',borderTop:`1px solid ${t.border}`}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:44,flexWrap:'wrap',gap:22}}>
+          <div>
+            <div style={{display:'inline-flex',alignItems:'center',gap:8,background:t.accent2Dim,border:`1px solid ${t.accent2}35`,borderRadius:20,padding:'5px 14px',marginBottom:18}}>
+              <span style={{color:t.accent2,fontSize:11,fontWeight:700,letterSpacing:'.09em',textTransform:'uppercase',fontFamily:'Plus Jakarta Sans',whiteSpace:'nowrap'}}>Marketplace · Etsy · Power BI</span>
+            </div>
+            <h2 style={{fontSize:44,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1.1,marginBottom:12,letterSpacing:'-.022em'}}>Plantillas ESG<br/>Listas para Implementar</h2>
+            <p style={{fontSize:17,color:t.textMuted,lineHeight:1.6,fontFamily:'DM Sans'}}>Descarga, personaliza y reporta. Formatos Power BI, Excel & PDF.</p>
+          </div>
+          <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
+            {CATS.map(([id,lbl])=>(
+              <button key={id} onClick={()=>setCat(id)} style={{padding:'8px 17px',borderRadius:20,border:`1px solid ${cat===id?t.accent:t.border}`,background:cat===id?t.accentDim:'transparent',color:cat===id?t.accent:t.textMuted,fontSize:13,fontWeight:600,cursor:'pointer',transition:'all .18s',fontFamily:'Plus Jakarta Sans'}}>{lbl}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:22}}>
+          {shown.map(tp=>(
+            <div key={tp.id} onMouseEnter={()=>setHov(tp.id)} onMouseLeave={()=>setHov(null)}
+              style={{background:hov===tp.id?t.cardHover:t.card,border:`1px solid ${hov===tp.id?t.borderStrong:t.border}`,borderRadius:16,overflow:'hidden',transition:'all .2s',transform:hov===tp.id?'translateY(-4px)':'none',boxShadow:hov===tp.id?`0 16px 40px rgba(0,0,0,${t.dark?.3:.1})`:null,cursor:'pointer'}}>
+              <div style={{position:'relative',height:116,overflow:'hidden'}}>{TH[tp.th]}
+                {tp.badge&&<div style={{position:'absolute',top:10,right:10,background:tp.bc+'D0',color:t.dark?t.ctaText:'#fff',padding:'3px 10px',borderRadius:20,fontSize:10,fontWeight:700,fontFamily:'Plus Jakarta Sans',backdropFilter:'blur(6px)'}}>{tp.badge}</div>}
+              </div>
+              <div style={{padding:'17px 17px 14px'}}>
+                <h3 style={{fontSize:15,fontWeight:700,fontFamily:'Plus Jakarta Sans',color:t.text,marginBottom:7,lineHeight:1.3}}>{tp.name}</h3>
+                <p style={{fontSize:12,color:t.textMuted,lineHeight:1.5,marginBottom:13,fontFamily:'DM Sans'}}>{tp.desc}</p>
+                <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:13}}>
+                  <span style={{color:t.warning,fontSize:12}}>★★★★★</span>
+                  <span style={{fontSize:12,fontWeight:600,color:t.text}}>{tp.rating}</span>
+                  <span style={{fontSize:11,color:t.textFaint}}>({tp.rev} reseñas)</span>
+                </div>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <span style={{fontSize:21,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text}}>${tp.price} <span style={{fontSize:11,color:t.textMuted,fontWeight:400}}>USD</span></span>
+                  <a href="https://www.etsy.com/es/shop/EcoInsight?ref=profile_header" target="_blank" rel="noopener noreferrer" style={{padding:'7px 14px',background:hov===tp.id?t.cta:'transparent',border:`1.5px solid ${hov===tp.id?t.cta:t.borderStrong}`,borderRadius:8,color:hov===tp.id?t.ctaText:t.textMuted,fontSize:12,fontWeight:700,cursor:'pointer',transition:'all .2s',fontFamily:'Plus Jakarta Sans',textDecoration:'none',display:'inline-block'}}>Ver en Etsy →</a>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{textAlign:'center',marginTop:44}}>
+          <a href="https://www.etsy.com/es/shop/EcoInsight?ref=profile_header" target="_blank" rel="noopener noreferrer" style={{display:'inline-flex',alignItems:'center',gap:8,color:t.accent,fontSize:15,fontWeight:600,fontFamily:'Plus Jakarta Sans',textDecoration:'none'}}>Ver todas las plantillas en Etsy <span style={{fontSize:18}}>→</span></a>
+        </div>
+      </div>
+    </section>
+  );
+}
+window.EcoMarketplace = EcoMarketplace;
+</script>
+
+<!-- ═══ COLOR SYSTEM (hidden) ═══ -->
+<script type="text/babel">
+function EcoColorSystem({t, theme}) {
+  const h2r=h=>{const c=h.slice(0,7);const r=parseInt(c.slice(1,3),16),g=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16);return `rgb(${r}, ${g}, ${b})`;};
+  const TH=window.THEMES[theme];
+  const palette=[
+    {group:'Fondos & Superficies',colors:[
+      {name:'Background',hex:t.bg,use:'Fondo de página'},
+      {name:'Surface',hex:t.surface,use:'Paneles, headers'},
+      {name:'Card',hex:t.card,use:'Tarjetas, modales'},
+      {name:'Border',hex:t.border,use:'Divisores, inputs'},
+    ]},
+    {group:'Acentos & Marca',colors:[
+      {name:'Acento Principal',hex:t.accent,use:'CTA, positivos, Scope 1'},
+      {name:'Acento Datos',hex:t.accent2,use:'Gráficos, Scope 2, links'},
+      {name:'Advertencia',hex:t.warning,use:'Scope 3, alertas medias'},
+      {name:'Crítico',hex:t.critical,use:'Alertas, Scope E-F'},
+    ]},
+    {group:'Tipografía',colors:[
+      {name:'Texto Principal',hex:t.text,use:'Headings, cuerpo'},
+      {name:'Texto Secundario',hex:t.textMuted,use:'Labels, subtítulos'},
+      {name:'Texto Terciario',hex:t.textFaint,use:'Placeholders, hints'},
+      {name:'CTA Text',hex:t.ctaText,use:'Texto sobre botón CTA'},
+    ]},
+  ];
+  return (
+    <section style={{background:t.surface,padding:'96px 0',borderTop:`1px solid ${t.border}`}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+        <div style={{marginBottom:48}}>
+          <h2 style={{fontSize:38,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,marginBottom:10,letterSpacing:'-.022em'}}>
+            Sistema de Color · <span style={{color:t.accent}}>{TH.label}</span>
+          </h2>
+          <p style={{fontSize:16,color:t.textMuted,lineHeight:1.65,fontFamily:'DM Sans'}}>
+            {TH.tagline} · Paleta diseñada bajo WCAG 2.2 AA — contraste mínimo 4.5:1 en texto normal. Cambia la variación con los puntos en el header.
+          </p>
+        </div>
+        {palette.map(({group,colors})=>(
+          <div key={group} style={{marginBottom:36}}>
+            <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:t.textMuted,marginBottom:14,fontFamily:'Plus Jakarta Sans'}}>{group}</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14}}>
+              {colors.map(({name,hex,use})=>(
+                <div key={name} style={{background:t.card,border:`1px solid ${t.border}`,borderRadius:12,overflow:'hidden'}}>
+                  <div style={{height:56,background:hex}}/>
+                  <div style={{padding:'12px 13px'}}>
+                    <div style={{fontSize:13,fontWeight:700,color:t.text,marginBottom:4,fontFamily:'Plus Jakarta Sans'}}>{name}</div>
+                    <div style={{display:'flex',gap:7,marginBottom:5,flexWrap:'wrap'}}>
+                      <span style={{fontSize:10,fontFamily:'DM Mono,monospace',color:t.textMuted,background:t.bg,borderRadius:4,padding:'2px 6px'}}>{hex.slice(0,7).toUpperCase()}</span>
+                      <span style={{fontSize:10,fontFamily:'DM Mono',color:t.textFaint}}>{h2r(hex)}</span>
+                    </div>
+                    <div style={{fontSize:11,color:t.textMuted,lineHeight:1.45,fontFamily:'DM Sans'}}>{use}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+        {/* Standards badges */}
+        <div style={{marginTop:12,display:'flex',gap:10,flexWrap:'wrap'}}>
+          {['WCAG 2.2 AA','GHG Protocol','GRI Standards','TCFD','ISO 14064','SBTI Compatible'].map(s=>(
+            <span key={s} style={{fontSize:11,fontWeight:600,color:t.textMuted,background:t.card,border:`1px solid ${t.border}`,borderRadius:20,padding:'5px 12px',fontFamily:'Plus Jakarta Sans'}}>{s}</span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+window.EcoColorSystem = EcoColorSystem;
+</script>
+
+<!-- ═══ NOTICIAS ═══ -->
+<script type="text/babel">
+const NEWS_POOL = [
+  {id:1,cat:'Regulación',title:'Chile lanza Registro Nacional de Emisiones GEI para industrias sobre 25,000 tCO₂e',excerpt:'El sistema centraliza el reporte de más de 450 grandes emisores bajo la Ley Marco de Cambio Climático.',src:'MMA Chile',time:'2h',read:'4 min'},
+  {id:2,cat:'Clima',title:'COP30 Belém: LATAM propone mecanismos de carbono diferenciados para países en desarrollo',excerpt:'Chile, Colombia y Brasil presentaron propuesta conjunta para créditos de carbono de alta integridad.',src:'CMNUCC',time:'5h',read:'6 min'},
+  {id:3,cat:'ESG',title:'BHP Chile reduce 18% sus emisiones directas y logra electricidad 100% renovable en Escondida',excerpt:'El reporte anual 2024 confirma el mayor avance en descarbonización desde 2018.',src:'BHP Sustainability',time:'7h',read:'3 min'},
+  {id:4,cat:'Energía',title:'Colombia licita 2.4 GW de energías renovables con contratos PPA a 15 años',excerpt:'La CREG proyecta una reducción del 22% en costos energéticos para el sector industrial.',src:'CREG Colombia',time:'12h',read:'5 min'},
+  {id:5,cat:'Regulación',title:'SEC publica normas definitivas de divulgación climática: impacto en subsidiarias LATAM desde 2026',excerpt:'Empresas cotizadas en bolsas de EE.UU. deberán reportar Scope 1 y 2 con verificación externa.',src:'SEC.gov',time:'1d',read:'7 min'},
+  {id:6,cat:'Clima',title:'Perú crea primera zona de carbono azul de 85,000 ha en la costa de Piura',excerpt:'Los créditos serán certificados bajo VCS y se destinarán a comunidades costeras locales.',src:'SERNANP Perú',time:'1d',read:'4 min'},
+  {id:7,cat:'ESG',title:'Mercado voluntario de carbono LATAM bate récord: $340M en transacciones durante 2024',excerpt:'Colombia y Chile lideran el volumen; proyectos forestales concentran el 68% de los créditos.',src:'Xpansiv Markets',time:'2d',read:'5 min'},
+  {id:8,cat:'Minería',title:'SQM y Codelco se unen para descarbonizar la cadena de suministro del litio en 40% para 2028',excerpt:'El acuerdo incluye electrificación de transporte y nuevo protocolo GHG para emisiones Scope 3.',src:'Codelco',time:'2d',read:'6 min'},
+  {id:9,cat:'Clima',title:'Brasil actualiza NDC: meta de 67% de reducción de emisiones al 2035 base año 2005',excerpt:'Primera NDC con metas sectoriales vinculantes para agricultura, energía e industria.',src:'MMA Brasil',time:'3d',read:'5 min'},
+  {id:10,cat:'Energía',title:'Argentina instala 1,200 MW eólicos en Patagonia; factor de red mejora a 0.29 kgCO₂e/kWh',excerpt:'El proyecto permite actualizar inventarios GEI corporativos de todo el país.',src:'CAMMESA',time:'3d',read:'3 min'},
+  {id:11,cat:'ESG',title:'Ranking ESG LATAM 2024: minería lidera adopción de reportes GRI y TCFD en la región',excerpt:'El 72% de las 50 mayores mineras publicó reporte verificado por terceros en 2024.',src:'EcoInsight Research',time:'4d',read:'8 min'},
+  {id:12,cat:'Regulación',title:'Guatemala aprueba ley vinculante de carbono: empresas sobre 100 tCO₂e deben reportar anualmente',excerpt:'Primera legislación centroamericana alineada con GHG Protocol, vigente desde enero 2025.',src:'MARN Guatemala',time:'5d',read:'4 min'},
+];
+const CAT_COLORS_NEWS = {Regulación:'#D4973A',Clima:'#4DB87A',ESG:'#3B8FDB',Energía:'#8B5CF6',Minería:'#F59E0B'};
+function EcoNews({t}) {
+  const [visible,setVisible]=React.useState(NEWS_POOL.slice(0,6));
+  const [cat,setCat]=React.useState('Todos');
+  const [secs,setSecs]=React.useState(0);
+  const [flashId,setFlashId]=React.useState(null);
+  const poolRef=React.useRef(6);
+  React.useEffect(()=>{
+    const tick=setInterval(()=>setSecs(s=>s+1),1000);
+    const upd=setInterval(()=>{
+      const idx=poolRef.current%NEWS_POOL.length;
+      poolRef.current++;
+      const fresh={...NEWS_POOL[idx],uid:Date.now()};
+      setVisible(prev=>[fresh,...prev.slice(0,5)]);
+      setSecs(0); setFlashId(fresh.uid);
+      setTimeout(()=>setFlashId(null),2800);
+    },11000);
+    return()=>{clearInterval(tick);clearInterval(upd);};
+  },[]);
+  const CATS=['Todos','ESG','Clima','Energía','Regulación','Minería'];
+  const shown=cat==='Todos'?visible:visible.filter(a=>a.cat===cat);
+  const featured=shown[0], rest=shown.slice(1);
+  const cc=a=>CAT_COLORS_NEWS[a.cat]||t.accent;
+  const isNew=a=>(a.uid&&flashId===a.uid)||(!a.uid&&flashId===a.id);
+  const Badge=({a,small})=>(
+    <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:small?8:12}}>
+      <span style={{background:cc(a)+'22',color:cc(a),fontSize:small?9:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',padding:'2px 9px',borderRadius:20,fontFamily:'Plus Jakarta Sans'}}>{a.cat}</span>
+      {isNew(a)&&<span style={{background:t.critical+'22',color:t.critical,fontSize:9,fontWeight:700,padding:'2px 8px',borderRadius:20,fontFamily:'Plus Jakarta Sans',animation:'pulse 1s 3'}}>● NUEVO</span>}
+    </div>
+  );
+  return (
+    <section id="noticias" style={{background:t.bg,padding:'96px 0',borderTop:`1px solid ${t.border}`}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:36,flexWrap:'wrap',gap:20}}>
+          <div>
+            <div style={{display:'inline-flex',alignItems:'center',gap:8,background:t.critical+'15',border:`1px solid ${t.critical}35`,borderRadius:20,padding:'5px 14px',marginBottom:18}}>
+              <span style={{width:7,height:7,borderRadius:'50%',background:t.critical,display:'inline-block',animation:'pulse 1.8s infinite'}}/>
+              <span style={{color:t.critical,fontSize:11,fontWeight:700,letterSpacing:'.09em',textTransform:'uppercase',fontFamily:'Plus Jakarta Sans',whiteSpace:'nowrap'}}>Noticias en vivo · ESG</span>
+            </div>
+            <h2 style={{fontSize:44,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1.1,letterSpacing:'-.022em',marginBottom:10}}>Centro de<br/>Noticias Ambientales</h2>
+            <p style={{fontSize:16,color:t.textMuted,fontFamily:'DM Sans',lineHeight:1.6}}>Actualización continua de noticias ESG, clima y regulación para LATAM.</p>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:12}}>
+            <div style={{display:'flex',alignItems:'center',gap:7,fontSize:12,color:t.textMuted,fontFamily:'DM Mono'}}>
+              <span style={{width:6,height:6,borderRadius:'50%',background:t.positive,display:'inline-block',animation:'pulse 2s infinite'}}/>
+              Actualizado hace {secs}s
+            </div>
+            <div style={{display:'flex',gap:7,flexWrap:'wrap',justifyContent:'flex-end'}}>
+              {CATS.map(c=>(
+                <button key={c} onClick={()=>setCat(c)} style={{padding:'7px 14px',borderRadius:20,border:`1px solid ${cat===c?(CAT_COLORS_NEWS[c]||t.accent):t.border}`,background:cat===c?(CAT_COLORS_NEWS[c]||t.accent)+'18':'transparent',color:cat===c?(CAT_COLORS_NEWS[c]||t.accent):t.textMuted,fontSize:12,fontWeight:600,cursor:'pointer',transition:'all .18s',fontFamily:'Plus Jakarta Sans'}}>{c}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+        {featured&&(
+          <div style={{display:'grid',gridTemplateColumns:'1.55fr 1fr',gap:20,marginBottom:18}}>
+            <div style={{background:isNew(featured)?t.surface:t.card,border:`1.5px solid ${isNew(featured)?cc(featured):t.border}`,borderRadius:16,padding:'28px',cursor:'pointer',transition:'all .35s',display:'flex',flexDirection:'column',justifyContent:'space-between',minHeight:240}}>
+              <div><Badge a={featured}/>
+                <h3 style={{fontSize:21,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1.28,marginBottom:12}}>{featured.title}</h3>
+                <p style={{fontSize:14,color:t.textMuted,lineHeight:1.62,fontFamily:'DM Sans'}}>{featured.excerpt}</p>
+              </div>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:20,paddingTop:16,borderTop:`1px solid ${t.border}`}}>
+                <span style={{fontSize:11,color:t.textFaint,fontFamily:'DM Sans',fontWeight:600}}>{featured.src}</span>
+                <span style={{fontSize:11,color:t.textFaint,fontFamily:'DM Mono'}}>hace {featured.time} · {featured.read} lectura</span>
+              </div>
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:16}}>
+              {rest.slice(0,2).map(a=>(
+                <div key={a.uid||a.id} style={{background:t.card,border:`1px solid ${isNew(a)?cc(a):t.border}`,borderRadius:14,padding:'18px 20px',cursor:'pointer',transition:'all .35s',flex:1,display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
+                  <div><Badge a={a} small/>
+                    <h4 style={{fontSize:14,fontWeight:700,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1.38,marginBottom:8}}>{a.title}</h4>
+                  </div>
+                  <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:t.textFaint,fontFamily:'DM Mono'}}>
+                    <span>{a.src}</span><span>hace {a.time}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:16,marginBottom:36}}>
+          {rest.slice(2,5).map(a=>(
+            <div key={a.uid||a.id} style={{background:t.card,border:`1px solid ${isNew(a)?cc(a):t.border}`,borderRadius:14,padding:'16px 18px',cursor:'pointer',transition:'all .35s'}}>
+              <Badge a={a} small/>
+              <h4 style={{fontSize:13,fontWeight:700,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1.38,marginBottom:8}}>{a.title}</h4>
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:t.textFaint,fontFamily:'DM Mono'}}>
+                <span>{a.src}</span><span>hace {a.time} · {a.read}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{textAlign:'center'}}>
+          <a href="#" style={{display:'inline-flex',alignItems:'center',gap:8,color:t.accent,fontSize:15,fontWeight:600,fontFamily:'Plus Jakarta Sans',textDecoration:'none'}}>Ver todas las noticias ESG <span>→</span></a>
+        </div>
+      </div>
+    </section>
+  );
+}
+window.EcoNews = EcoNews;
+</script>
+
+<!-- ═══ FOOTER ═══ -->
+<script type="text/babel">
+function EcoFooter({t}) {
+  const logoBox={background:t.dark?'rgba(255,255,255,.92)':'transparent',borderRadius:8,padding:t.dark?'3px 4px':0,display:'flex',alignItems:'center'};
+  const links=[['Plataforma',['Calculadora GEI','Dashboard ESG','Biblioteca Ambiental','SaaS Empresarial']],['Recursos',['Noticias ESG','Marketplace Etsy','Plantillas Power BI','Casos de Éxito']],['Empresa',['Sobre EcoInsight','Blog','Contacto','Privacidad']]];
+  return (
+    <footer style={{background:t.bg,borderTop:`1px solid ${t.border}`,padding:'60px 0 36px'}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:48,flexWrap:'wrap',gap:32}}>
+          <div style={{maxWidth:240}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+              <div style={logoBox}><img src="uploads/logo_file-1781309583515.png" alt="" style={{height:28,width:'auto'}}/></div>
+              <span style={{fontFamily:'Plus Jakarta Sans',fontWeight:800,fontSize:18,color:t.text,letterSpacing:'-.02em'}}><span style={{color:t.accent}}>Eco</span>Insight</span>
+            </div>
+            <p style={{fontSize:13,color:t.textMuted,lineHeight:1.7,fontFamily:'DM Sans'}}>Transformando datos ambientales en decisiones sostenibles.</p>
+          </div>
+          {links.map(([title,items])=>(
+            <div key={title}>
+              <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:t.textMuted,marginBottom:14,fontFamily:'Plus Jakarta Sans'}}>{title}</div>
+              {items.map(l=>(
+                <a key={l} href="#" style={{display:'block',fontSize:14,color:t.textMuted,textDecoration:'none',marginBottom:10,fontFamily:'DM Sans',transition:'color .15s'}}
+                  onMouseEnter={e=>e.currentTarget.style.color=t.text} onMouseLeave={e=>e.currentTarget.style.color=t.textMuted}>{l}</a>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div style={{borderTop:`1px solid ${t.border}`,paddingTop:22,display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:12}}>
+          <span style={{fontSize:12,color:t.textFaint,fontFamily:'DM Sans'}}>© 2024 EcoInsight · Plataforma de inteligencia ambiental para LATAM</span>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+            {['GHG Protocol','GRI Standards','TCFD','WCAG 2.2 AA'].map(s=>(
+              <span key={s} style={{fontSize:10,color:t.textFaint,background:t.card,border:`1px solid ${t.border}`,borderRadius:20,padding:'3px 10px',fontFamily:'Plus Jakarta Sans',fontWeight:600}}>{s}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+window.EcoFooter = EcoFooter;
+</script>
+
+<!-- ═══ APP ═══ -->
+<script type="text/babel">
+function App() {
+  const [theme, setTheme] = React.useState(() => localStorage.getItem('ei_theme') || 'navy');
+  const t = window.THEMES[theme] || window.THEMES.navy;
+  React.useEffect(() => {
+    localStorage.setItem('ei_theme', theme);
+    document.body.style.background = t.bg;
+    document.body.style.color = t.text;
+  }, [theme, t]);
+  return (
+    <div style={{background:t.bg,color:t.text,minHeight:'100vh',fontFamily:'DM Sans,sans-serif',transition:'background .35s,color .25s'}}>
+      <EcoHeader t={t} theme={theme} setTheme={setTheme}/>
+      <EcoHero t={t} theme={theme}/>
+      <EcoNews t={t} theme={theme}/>
+      <EcoCalculator t={t} theme={theme}/>
+      <EcoMarketplace t={t} theme={theme}/>
+      <EcoFooter t={t}/>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
