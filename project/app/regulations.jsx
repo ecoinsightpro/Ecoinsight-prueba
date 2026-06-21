@@ -5,6 +5,7 @@
    ═══════════════════════════════════════════════════════════ */
 function EcoRegulations({ t, lang }) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const Reveal = window.Reveal;
   const PROJECTS = window.REG_PROJECTS, FACTORS = window.REG_FACTORS, LAWS = window.REG_LAWS, CATS = window.REG_CATS;
 
@@ -41,7 +42,7 @@ function EcoRegulations({ t, lang }) {
       <div aria-hidden="true" style={{position:'absolute',top:-160,left:'8%',width:420,height:420,borderRadius:'50%',background:t.accent,opacity:.06,filter:'blur(90px)',pointerEvents:'none'}}/>
       <div aria-hidden="true" style={{position:'absolute',bottom:-200,right:'4%',width:480,height:480,borderRadius:'50%',background:t.accent2,opacity:.05,filter:'blur(100px)',pointerEvents:'none'}}/>
 
-      <div style={{position:'relative',maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{position:'relative',maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <Reveal>
           <div style={{maxWidth:680,marginBottom:44}}>
             <div style={{display:'inline-flex',alignItems:'center',gap:8,background:t.accent2Dim,border:`1px solid ${t.accent2}35`,borderRadius:20,padding:'5px 14px',marginBottom:18}}>
@@ -60,7 +61,7 @@ function EcoRegulations({ t, lang }) {
           </div>
         </Reveal>
         <Reveal>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:38}}>
+          <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'repeat(4,1fr)':'repeat(2,1fr)',gap:12,marginBottom:38}}>
             {PROJECTS.map((p,i) => {
               const on = proj === p.id;
               return (
@@ -141,7 +142,7 @@ function EcoRegulations({ t, lang }) {
                     <span style={{fontSize:12.5,fontWeight:700,color:t.text,fontFamily:'Plus Jakarta Sans',textTransform:'uppercase',letterSpacing:'.06em'}}>{meta.label[lang]}</span>
                     <span style={{flex:1,height:1,background:t.border}}/>
                   </div>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:14}}>
+                  <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'repeat(2,1fr)':'1fr',gap:14}}>
                     {ids.map((id,ci) => {
                       const law = LAWS[id];
                       return (

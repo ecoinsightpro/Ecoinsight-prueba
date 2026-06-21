@@ -66,6 +66,7 @@ window.ExtLink = function ExtLink({a, t, lang, small}){
 /* ═══ NEWS CENTER ═══ */
 function EcoNews({t, lang, go}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const NEWS = window.NEWS, CC = window.CAT_COLORS_NEWS, CEN = window.CAT_EN;
   const [cat, setCat] = React.useState('Todos');
   const [region, setRegion] = React.useState('todas');
@@ -153,7 +154,7 @@ function EcoNews({t, lang, go}) {
 
   return (
     <section id="noticias" style={{background:t.bg,padding:'96px 0',borderTop:`1px solid ${t.border}`,scrollMarginTop:84}}>
-      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <Reveal>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:30,flexWrap:'wrap',gap:20}}>
           <div>
@@ -206,7 +207,7 @@ function EcoNews({t, lang, go}) {
         )}
 
         {featured && (
-        <div style={{display:'grid',gridTemplateColumns:'1.55fr 1fr',gap:20,marginBottom:20}}>
+        <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1.55fr 1fr':'1fr',gap:20,marginBottom:20}}>
           {/* featured */}
           <Reveal>
           <div onClick={()=>go('article',featured.id)} role="button" tabIndex={0} onKeyDown={window.openKey(()=>go('article',featured.id))} aria-label={featured.title[lang]} style={{background:t.card,border:`1px solid ${t.border}`,borderRadius:18,overflow:'hidden',cursor:'pointer',transition:'all .25s',height:'100%'}}
@@ -251,8 +252,8 @@ function EcoNews({t, lang, go}) {
         )}
 
         {/* recent grid + most read */}
-        <div style={{display:'grid',gridTemplateColumns:'1fr 320px',gap:20,marginTop:4}}>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:18}}>
+        <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 320px':'1fr',gap:20,marginTop:4}}>
+          <div style={{display:'grid',gridTemplateColumns:bp==='lg'?'repeat(3,1fr)':bp==='md'?'repeat(2,1fr)':'1fr',gap:18}}>
             {grid.map((a,i)=>(
               <Reveal key={a.id} delay={i*70}>
               <div onClick={()=>go('article',a.id)} role="button" tabIndex={0} onKeyDown={window.openKey(()=>go('article',a.id))} aria-label={a.title[lang]} style={{background:t.card,border:`1px solid ${t.border}`,borderRadius:14,overflow:'hidden',cursor:'pointer',transition:'all .22s',height:'100%'}}
@@ -302,6 +303,7 @@ window.EcoNews = EcoNews;
 /* ═══ ARTICLE READER ═══ */
 function EcoArticle({t, lang, id, go}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const NEWS = window.NEWS, CC = window.CAT_COLORS_NEWS, CEN = window.CAT_EN;
   const ALL = [...(window.__feedArticles||[]), ...NEWS];
   const seen=new Set(); const POOL = ALL.filter(x=>{ if(seen.has(x.id))return false; seen.add(x.id); return true; });
@@ -321,7 +323,7 @@ function EcoArticle({t, lang, id, go}) {
   );
   return (
     <article style={{background:t.bg,minHeight:'100vh',paddingTop:90,paddingBottom:80}}>
-      <div style={{maxWidth:760,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{maxWidth:760,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <button onClick={()=>go('home','#noticias')} style={{display:'inline-flex',alignItems:'center',gap:8,background:'transparent',border:`1px solid ${t.border}`,color:t.textMuted,fontSize:13,fontWeight:600,fontFamily:'Plus Jakarta Sans',padding:'8px 16px',borderRadius:20,cursor:'pointer',marginBottom:28,transition:'all .2s'}}
           onMouseEnter={e=>{e.currentTarget.style.color=t.text;e.currentTarget.style.borderColor=t.borderStrong;}}
           onMouseLeave={e=>{e.currentTarget.style.color=t.textMuted;e.currentTarget.style.borderColor=t.border;}}>
@@ -336,7 +338,7 @@ function EcoArticle({t, lang, id, go}) {
             <span style={{fontSize:12,color:t.textFaint,fontFamily:'DM Mono'}}>{L('Fuente','Source')}: {a.src}</span>
           )}
         </div>
-        <h1 style={{fontSize:40,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1.16,letterSpacing:'-.025em',marginBottom:22}}>{a.title[lang]}</h1>
+        <h1 style={{fontSize:bp==='sm'?26:40,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1.16,letterSpacing:'-.025em',marginBottom:22}}>{a.title[lang]}</h1>
         <div style={{borderRadius:16,overflow:'hidden',border:`1px solid ${t.border}`,marginBottom:10}}><window.NewsImg t={t} lang={lang} a={a} h={300}/></div>
         <div style={{fontSize:11,color:t.textFaint,fontFamily:'DM Sans',marginBottom:26,textAlign:'center'}}>{L('Arrastra aquí la imagen original de la noticia','Drop the original article image here')}</div>
 
@@ -365,7 +367,7 @@ function EcoArticle({t, lang, id, go}) {
 
         {/* impacts */}
         {hasImpacts && (
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,margin:'28px 0'}}>
+        <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 1fr':'1fr',gap:14,margin:'28px 0'}}>
           <ImpactBox label={L('Impacto para Chile','Impact for Chile')} color={t.accent} text={a.impactChile[lang]}/>
           <ImpactBox label={L('Impacto para empresas','Impact for companies')} color={t.accent2} text={a.impactEmpresas[lang]}/>
         </div>
@@ -383,7 +385,7 @@ function EcoArticle({t, lang, id, go}) {
 
         {/* related */}
         <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:t.textMuted,marginBottom:16,fontFamily:'Plus Jakarta Sans'}}>{L('Artículos relacionados','Related articles')}</div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:14}}>
+        <div style={{display:'grid',gridTemplateColumns:bp==='lg'?'repeat(3,1fr)':'repeat(2,1fr)',gap:14}}>
           {relFill.map(r=>(
             <div key={r.id} onClick={()=>go('article',r.id)} role="button" tabIndex={0} onKeyDown={window.openKey(()=>go('article',r.id))} aria-label={r.title[lang]} style={{background:t.card,border:`1px solid ${t.border}`,borderRadius:12,overflow:'hidden',cursor:'pointer',transition:'all .2s'}}
               onMouseEnter={e=>{e.currentTarget.style.borderColor=CC[r.cat]||t.accent;e.currentTarget.style.transform='translateY(-3px)';}}

@@ -29,6 +29,18 @@ window.openKey = (fn) => (e) => { if(e.key==='Enter' || e.key===' '){ e.preventD
 /* reduced-motion guard */
 const REDUCED = typeof window!=='undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* responsive breakpoint hook — 'sm' < 640 · 'md' < 1024 · 'lg' ≥ 1024 */
+window.useBreakpoint = function() {
+  const get = () => window.innerWidth < 640 ? 'sm' : window.innerWidth < 1024 ? 'md' : 'lg';
+  const [bp, setBp] = React.useState(get);
+  React.useEffect(() => {
+    const fn = () => setBp(get());
+    window.addEventListener('resize', fn, {passive:true});
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+  return bp;
+};
+
 /* animate a number toward a moving target (used by the live calculator) */
 window.useTween = function useTween(target, dur=650){
   const [val,setVal] = React.useState(target);
@@ -183,12 +195,17 @@ window.Newsletter = Newsletter;
 /* ═══ HEADER ═══ */
 function EcoHeader({t, theme, setTheme, lang, setLang, go}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
+  const isMobile = bp === 'sm';
+  const isCompact = bp !== 'lg';
   const [scrolled, setScrolled] = React.useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
   React.useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 28);
     window.addEventListener('scroll', fn);
     return () => window.removeEventListener('scroll', fn);
   }, []);
+  React.useEffect(() => { if(menuOpen) document.body.style.overflow='hidden'; else document.body.style.overflow=''; return()=>{document.body.style.overflow=''}; }, [menuOpen]);
   const nav = [
     [L('Plataforma','Platform'),'#top'],
     [L('Noticias','News'),'#noticias'],
@@ -197,9 +214,9 @@ function EcoHeader({t, theme, setTheme, lang, setLang, go}) {
     [L('Calculadora','Calculator'),'#calculadora'],
     [L('Plantillas','Templates'),'#marketplace'],
   ];
-  const logoBox = {display:'flex', alignItems:'center'};
   const onNav = (e,href) => {
     e.preventDefault();
+    setMenuOpen(false);
     if (href==='#calculadora') { go('calculator'); return; }
     if (href==='#normativa') { go('regulations'); return; }
     go('home');
@@ -207,45 +224,96 @@ function EcoHeader({t, theme, setTheme, lang, setLang, go}) {
     if(href==='#top') window.scrollTo({top:0,behavior:'smooth'});
   };
   return (
-    <header style={{position:'fixed',top:0,left:0,right:0,zIndex:200,background:scrolled?t.bg+'F4':'transparent',backdropFilter:scrolled?'blur(18px)':'none',borderBottom:`1px solid ${scrolled?t.border:'transparent'}`,transition:'all .3s'}}>
-      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px',display:'flex',alignItems:'center',justifyContent:'space-between',height:80,gap:18}}>
-        <a href="#top" onClick={(e)=>onNav(e,'#top')} style={{display:'flex',alignItems:'center',gap:11,textDecoration:'none',flexShrink:0}}>
-          <div style={logoBox}><img src={(window.__resources&&window.__resources.logo)||"uploads/logo-ei.png"} alt="EcoInsight" style={{height:66,width:'auto'}}/></div>
-          <span style={{fontFamily:'Plus Jakarta Sans,sans-serif',fontWeight:800,fontSize:35,color:t.text,letterSpacing:'-.022em'}}>
-            <span style={{color:t.accent}}>Eco</span>Insight
-          </span>
-        </a>
-        <nav style={{display:'flex',gap:2}}>
-          {nav.map(([l,href]) => (
-            <a key={l} href={href} onClick={(e)=>onNav(e,href)}
-              style={{color:t.textMuted,textDecoration:'none',fontSize:15,fontWeight:500,padding:'7px 13px',borderRadius:7,transition:'all .18s',fontFamily:'DM Sans,sans-serif',whiteSpace:'nowrap'}}
-              onMouseEnter={e=>{e.currentTarget.style.color=t.text;e.currentTarget.style.background=t.border}}
-              onMouseLeave={e=>{e.currentTarget.style.color=t.textMuted;e.currentTarget.style.background='transparent'}}
-            >{l}</a>
-          ))}
-        </nav>
-        <div style={{display:'flex',alignItems:'center',gap:14,flexShrink:0}}>
-          {/* language toggle */}
-          <div style={{display:'flex',alignItems:'center',gap:1,background:t.card,border:`1px solid ${t.border}`,borderRadius:20,padding:3}}>
-            {[['es','ES'],['en','EN']].map(([code,lbl])=>(
-              <button key={code} onClick={()=>setLang(code)} aria-pressed={lang===code} aria-label={code==='es'?'Español':'English'}
-                style={{border:'none',cursor:'pointer',fontFamily:'Plus Jakarta Sans,sans-serif',fontWeight:700,fontSize:13,
-                  padding:'6px 13px',borderRadius:16,transition:'all .2s',
-                  background:lang===code?t.accent:'transparent',color:lang===code?t.ctaText:t.textMuted}}>{lbl}</button>
+    <React.Fragment>
+      <header style={{position:'fixed',top:0,left:0,right:0,zIndex:200,background:scrolled||menuOpen?t.bg+'F8':'transparent',backdropFilter:scrolled||menuOpen?'blur(18px)':'none',borderBottom:`1px solid ${scrolled||menuOpen?t.border:'transparent'}`,transition:'all .3s'}}>
+        <div style={{maxWidth:1180,margin:'0 auto',padding:`0 ${isMobile?'18px':'32px'}`,display:'flex',alignItems:'center',justifyContent:'space-between',height:isMobile?64:80,gap:12}}>
+          {/* Logo */}
+          <a href="#top" onClick={(e)=>onNav(e,'#top')} style={{display:'flex',alignItems:'center',gap:8,textDecoration:'none',flexShrink:0}}>
+            <img src={(window.__resources&&window.__resources.logo)||"uploads/logo-ei.png"} alt="EcoInsight" style={{height:isMobile?40:54,width:'auto'}}/>
+            <span style={{fontFamily:'Plus Jakarta Sans,sans-serif',fontWeight:800,fontSize:isMobile?22:28,color:t.text,letterSpacing:'-.022em'}}>
+              <span style={{color:t.accent}}>Eco</span>Insight
+            </span>
+          </a>
+
+          {/* Desktop nav */}
+          {!isCompact && (
+            <nav style={{display:'flex',gap:2}}>
+              {nav.map(([l,href]) => (
+                <a key={l} href={href} onClick={(e)=>onNav(e,href)}
+                  style={{color:t.textMuted,textDecoration:'none',fontSize:14,fontWeight:500,padding:'7px 11px',borderRadius:7,transition:'all .18s',fontFamily:'DM Sans,sans-serif',whiteSpace:'nowrap'}}
+                  onMouseEnter={e=>{e.currentTarget.style.color=t.text;e.currentTarget.style.background=t.border}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=t.textMuted;e.currentTarget.style.background='transparent'}}
+                >{l}</a>
+              ))}
+            </nav>
+          )}
+
+          {/* Desktop controls */}
+          {!isCompact && (
+            <div style={{display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
+              <div style={{display:'flex',alignItems:'center',gap:1,background:t.card,border:`1px solid ${t.border}`,borderRadius:20,padding:3}}>
+                {[['es','ES'],['en','EN']].map(([code,lbl])=>(
+                  <button key={code} onClick={()=>setLang(code)} aria-pressed={lang===code}
+                    style={{border:'none',cursor:'pointer',fontFamily:'Plus Jakarta Sans,sans-serif',fontWeight:700,fontSize:12,padding:'5px 12px',borderRadius:16,transition:'all .2s',background:lang===code?t.accent:'transparent',color:lang===code?t.ctaText:t.textMuted}}>{lbl}</button>
+                ))}
+              </div>
+              <div style={{display:'flex',gap:5,alignItems:'center'}}>
+                {Object.values(window.THEMES).map(th => (
+                  <button key={th.id} onClick={()=>setTheme(th.id)} title={th.label}
+                    style={{width:theme===th.id?22:10,height:10,borderRadius:5,background:th.dot,border:'none',cursor:'pointer',opacity:theme===th.id?1:.38,transition:'all .28s',padding:0}}/>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Mobile hamburger */}
+          {isCompact && (
+            <button onClick={()=>setMenuOpen(o=>!o)} aria-label={menuOpen?'Cerrar menú':'Abrir menú'}
+              style={{flexShrink:0,width:42,height:42,borderRadius:10,border:`1px solid ${t.border}`,background:menuOpen?t.accentDim:t.card,cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:5,transition:'all .2s'}}>
+              <span style={{display:'block',width:18,height:2,background:menuOpen?t.accent:t.text,borderRadius:2,transition:'all .25s',transform:menuOpen?'rotate(45deg) translate(5px,5px)':'none'}}/>
+              <span style={{display:'block',width:18,height:2,background:menuOpen?t.accent:t.text,borderRadius:2,transition:'all .25s',opacity:menuOpen?0:1}}/>
+              <span style={{display:'block',width:18,height:2,background:menuOpen?t.accent:t.text,borderRadius:2,transition:'all .25s',transform:menuOpen?'rotate(-45deg) translate(5px,-5px)':'none'}}/>
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* Mobile menu overlay */}
+      {isCompact && menuOpen && (
+        <div style={{position:'fixed',inset:0,zIndex:199,background:t.bg+'FA',backdropFilter:'blur(12px)',paddingTop:isMobile?64:80,display:'flex',flexDirection:'column',animation:'fadeIn .18s ease'}}>
+          <nav style={{flex:1,overflowY:'auto',padding:'24px 24px 0'}}>
+            {nav.map(([l,href])=>(
+              <a key={l} href={href} onClick={(e)=>onNav(e,href)}
+                style={{display:'block',color:t.text,textDecoration:'none',fontSize:22,fontWeight:700,fontFamily:'Plus Jakarta Sans',padding:'16px 0',borderBottom:`1px solid ${t.border}`,transition:'color .15s'}}
+                onMouseEnter={e=>e.currentTarget.style.color=t.accent}
+                onMouseLeave={e=>e.currentTarget.style.color=t.text}>{l}</a>
             ))}
-          </div>
-          {/* theme dots */}
-          <div style={{display:'flex',gap:5,alignItems:'center'}} title={L('Cambiar variación visual','Switch visual variant')}>
-            {Object.values(window.THEMES).map(th => (
-              <button key={th.id} onClick={()=>setTheme(th.id)} title={`${th.label} · ${th.tagline}`}
-                aria-label={L('Tema visual','Visual theme')+': '+th.label} aria-pressed={theme===th.id}
-                style={{width:theme===th.id?24:11,height:11,borderRadius:6,background:th.dot,border:'none',cursor:'pointer',opacity:theme===th.id?1:.38,transition:'all .28s',padding:0}}
-              />
-            ))}
+          </nav>
+          <div style={{padding:'28px 24px 40px',display:'flex',flexDirection:'column',gap:20}}>
+            {/* lang toggle */}
+            <div style={{display:'flex',gap:8,alignItems:'center'}}>
+              <span style={{fontSize:12,color:t.textMuted,fontFamily:'Plus Jakarta Sans',fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',minWidth:60}}>{L('Idioma','Language')}</span>
+              <div style={{display:'flex',gap:1,background:t.card,border:`1px solid ${t.border}`,borderRadius:20,padding:3}}>
+                {[['es','ES'],['en','EN']].map(([code,lbl])=>(
+                  <button key={code} onClick={()=>setLang(code)}
+                    style={{border:'none',cursor:'pointer',fontFamily:'Plus Jakarta Sans',fontWeight:700,fontSize:13,padding:'7px 16px',borderRadius:16,transition:'all .2s',background:lang===code?t.accent:'transparent',color:lang===code?t.ctaText:t.textMuted}}>{lbl}</button>
+                ))}
+              </div>
+            </div>
+            {/* theme dots */}
+            <div style={{display:'flex',gap:8,alignItems:'center'}}>
+              <span style={{fontSize:12,color:t.textMuted,fontFamily:'Plus Jakarta Sans',fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',minWidth:60}}>{L('Tema','Theme')}</span>
+              <div style={{display:'flex',gap:8}}>
+                {Object.values(window.THEMES).map(th=>(
+                  <button key={th.id} onClick={()=>setTheme(th.id)} title={th.label}
+                    style={{width:theme===th.id?32:22,height:22,borderRadius:11,background:th.dot,border:`2px solid ${theme===th.id?th.dot:'transparent'}`,cursor:'pointer',opacity:theme===th.id?1:.5,transition:'all .25s',padding:0,boxShadow:theme===th.id?`0 0 0 3px ${th.dot}44`:''}}/>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      )}
+    </React.Fragment>
   );
 }
 window.EcoHeader = EcoHeader;
@@ -253,6 +321,7 @@ window.EcoHeader = EcoHeader;
 /* ═══ HERO ═══ */
 function EcoHero({t, lang, go}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const DashCard = () => (
     <div className="dash-card" style={{background:t.card,border:`1px solid ${t.borderStrong}`,borderRadius:20,padding:'24px 26px',width:308,boxShadow:t.dark?'0 40px 90px rgba(0,0,0,.5)':'0 40px 80px rgba(0,0,0,.13)'}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
@@ -295,19 +364,19 @@ function EcoHero({t, lang, go}) {
     {node:'WCAG AA', l:L('Accesibilidad','Accessibility')},
   ];
   return (
-    <section style={{position:'relative',overflow:'hidden',minHeight:'100vh',display:'flex',alignItems:'center',background:t.heroBg,paddingTop:132,paddingBottom:70}}>
+    <section style={{position:'relative',overflow:'hidden',minHeight:'100vh',display:'flex',alignItems:'center',background:t.heroBg,paddingTop:bp==='sm'?96:132,paddingBottom:70}}>
       <div aria-hidden="true" style={{position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none'}}>
         <div className="aurora aurora-1" style={{background:t.accent}}/>
         <div className="aurora aurora-2" style={{background:t.accent2}}/>
       </div>
-      <div style={{position:'relative',zIndex:1,maxWidth:1180,margin:'0 auto',padding:'0 32px',width:'100%'}}>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 360px',gap:54,alignItems:'center'}}>
+      <div style={{position:'relative',zIndex:1,maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px',width:'100%'}}>
+        <div style={{display:'grid',gridTemplateColumns:bp==='lg'?'1fr 360px':'1fr',gap:bp==='sm'?28:54,alignItems:'center'}}>
           <div>
             <div className="ha1" style={{display:'inline-flex',alignItems:'center',gap:8,background:t.accentDim,border:`1px solid ${t.accent}35`,borderRadius:20,padding:'5px 14px',marginBottom:24,whiteSpace:'nowrap'}}>
               <span style={{width:6,height:6,borderRadius:'50%',background:t.accent,display:'inline-block',flexShrink:0}}/>
               <span style={{color:t.accent,fontSize:11,fontWeight:700,letterSpacing:'.09em',textTransform:'uppercase',fontFamily:'Plus Jakarta Sans'}}>Climate Tech · ESG · LATAM</span>
             </div>
-            <h1 className="ha2" style={{fontSize:56,fontWeight:800,lineHeight:1.08,letterSpacing:'-.03em',fontFamily:'Plus Jakarta Sans,sans-serif',color:t.text,marginBottom:20}}>
+            <h1 className="ha2" style={{fontSize:bp==='sm'?34:bp==='md'?44:56,fontWeight:800,lineHeight:1.08,letterSpacing:'-.03em',fontFamily:'Plus Jakarta Sans,sans-serif',color:t.text,marginBottom:20}}>
               {lang==='en'
                 ? <>Turning<br/>environmental data<br/>into <em style={{fontStyle:'normal',color:t.accent}}>sustainable</em><br/>decisions.</>
                 : <>Transformando<br/>datos ambientales<br/>en <em style={{fontStyle:'normal',color:t.accent}}>decisiones</em><br/>sostenibles.</>}
@@ -336,7 +405,7 @@ function EcoHero({t, lang, go}) {
               ))}
             </div>
           </div>
-          <div style={{display:'flex',justifyContent:'center'}}><window.EcoDashboard t={t} lang={lang}/></div>
+          {bp !== 'sm' && <div style={{display:'flex',justifyContent:'center'}}><window.EcoDashboard t={t} lang={lang}/></div>}
         </div>
       </div>
     </section>
@@ -347,6 +416,7 @@ window.EcoHero = EcoHero;
 /* ═══ FOOTER ═══ */
 function EcoFooter({t, lang}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const logoBox={display:'flex',alignItems:'center'};
   const links=[
     [L('Plataforma','Platform'),[L('Calculadora GEI','GHG Calculator'),L('Dashboard ESG','ESG Dashboard'),L('Soluciones','Solutions'),L('SaaS Empresarial','Enterprise SaaS')]],
@@ -355,7 +425,7 @@ function EcoFooter({t, lang}) {
   ];
   return (
     <footer style={{background:t.bg,borderTop:`1px solid ${t.border}`,padding:'60px 0 36px'}}>
-      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:48,flexWrap:'wrap',gap:32}}>
           <div style={{maxWidth:240}}>
             <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>

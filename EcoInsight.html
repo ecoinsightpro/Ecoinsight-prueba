@@ -738,6 +738,7 @@ window.__resources = { logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA/4A
 </script>
 
 <script type="text/babel">
+
 /* ══ data.jsx ══ */
 /* ═══════════════════════════════════════════════════════════
    EcoInsight · DATA + THEMES + i18n helper
@@ -1698,6 +1699,18 @@ window.openKey = (fn) => (e) => { if(e.key==='Enter' || e.key===' '){ e.preventD
 /* reduced-motion guard */
 const REDUCED = typeof window!=='undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* responsive breakpoint hook — 'sm' < 640 · 'md' < 1024 · 'lg' ≥ 1024 */
+window.useBreakpoint = function() {
+  const get = () => window.innerWidth < 640 ? 'sm' : window.innerWidth < 1024 ? 'md' : 'lg';
+  const [bp, setBp] = React.useState(get);
+  React.useEffect(() => {
+    const fn = () => setBp(get());
+    window.addEventListener('resize', fn, {passive:true});
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+  return bp;
+};
+
 /* animate a number toward a moving target (used by the live calculator) */
 window.useTween = function useTween(target, dur=650){
   const [val,setVal] = React.useState(target);
@@ -1852,12 +1865,17 @@ window.Newsletter = Newsletter;
 /* ═══ HEADER ═══ */
 function EcoHeader({t, theme, setTheme, lang, setLang, go}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
+  const isMobile = bp === 'sm';
+  const isCompact = bp !== 'lg';
   const [scrolled, setScrolled] = React.useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
   React.useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 28);
     window.addEventListener('scroll', fn);
     return () => window.removeEventListener('scroll', fn);
   }, []);
+  React.useEffect(() => { if(menuOpen) document.body.style.overflow='hidden'; else document.body.style.overflow=''; return()=>{document.body.style.overflow=''}; }, [menuOpen]);
   const nav = [
     [L('Plataforma','Platform'),'#top'],
     [L('Noticias','News'),'#noticias'],
@@ -1866,9 +1884,9 @@ function EcoHeader({t, theme, setTheme, lang, setLang, go}) {
     [L('Calculadora','Calculator'),'#calculadora'],
     [L('Plantillas','Templates'),'#marketplace'],
   ];
-  const logoBox = {display:'flex', alignItems:'center'};
   const onNav = (e,href) => {
     e.preventDefault();
+    setMenuOpen(false);
     if (href==='#calculadora') { go('calculator'); return; }
     if (href==='#normativa') { go('regulations'); return; }
     go('home');
@@ -1876,45 +1894,96 @@ function EcoHeader({t, theme, setTheme, lang, setLang, go}) {
     if(href==='#top') window.scrollTo({top:0,behavior:'smooth'});
   };
   return (
-    <header style={{position:'fixed',top:0,left:0,right:0,zIndex:200,background:scrolled?t.bg+'F4':'transparent',backdropFilter:scrolled?'blur(18px)':'none',borderBottom:`1px solid ${scrolled?t.border:'transparent'}`,transition:'all .3s'}}>
-      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px',display:'flex',alignItems:'center',justifyContent:'space-between',height:80,gap:18}}>
-        <a href="#top" onClick={(e)=>onNav(e,'#top')} style={{display:'flex',alignItems:'center',gap:11,textDecoration:'none',flexShrink:0}}>
-          <div style={logoBox}><img src={(window.__resources&&window.__resources.logo)||"uploads/logo-ei.png"} alt="EcoInsight" style={{height:66,width:'auto'}}/></div>
-          <span style={{fontFamily:'Plus Jakarta Sans,sans-serif',fontWeight:800,fontSize:35,color:t.text,letterSpacing:'-.022em'}}>
-            <span style={{color:t.accent}}>Eco</span>Insight
-          </span>
-        </a>
-        <nav style={{display:'flex',gap:2}}>
-          {nav.map(([l,href]) => (
-            <a key={l} href={href} onClick={(e)=>onNav(e,href)}
-              style={{color:t.textMuted,textDecoration:'none',fontSize:15,fontWeight:500,padding:'7px 13px',borderRadius:7,transition:'all .18s',fontFamily:'DM Sans,sans-serif',whiteSpace:'nowrap'}}
-              onMouseEnter={e=>{e.currentTarget.style.color=t.text;e.currentTarget.style.background=t.border}}
-              onMouseLeave={e=>{e.currentTarget.style.color=t.textMuted;e.currentTarget.style.background='transparent'}}
-            >{l}</a>
-          ))}
-        </nav>
-        <div style={{display:'flex',alignItems:'center',gap:14,flexShrink:0}}>
-          {/* language toggle */}
-          <div style={{display:'flex',alignItems:'center',gap:1,background:t.card,border:`1px solid ${t.border}`,borderRadius:20,padding:3}}>
-            {[['es','ES'],['en','EN']].map(([code,lbl])=>(
-              <button key={code} onClick={()=>setLang(code)} aria-pressed={lang===code} aria-label={code==='es'?'Español':'English'}
-                style={{border:'none',cursor:'pointer',fontFamily:'Plus Jakarta Sans,sans-serif',fontWeight:700,fontSize:13,
-                  padding:'6px 13px',borderRadius:16,transition:'all .2s',
-                  background:lang===code?t.accent:'transparent',color:lang===code?t.ctaText:t.textMuted}}>{lbl}</button>
+    <React.Fragment>
+      <header style={{position:'fixed',top:0,left:0,right:0,zIndex:200,background:scrolled||menuOpen?t.bg+'F8':'transparent',backdropFilter:scrolled||menuOpen?'blur(18px)':'none',borderBottom:`1px solid ${scrolled||menuOpen?t.border:'transparent'}`,transition:'all .3s'}}>
+        <div style={{maxWidth:1180,margin:'0 auto',padding:`0 ${isMobile?'18px':'32px'}`,display:'flex',alignItems:'center',justifyContent:'space-between',height:isMobile?64:80,gap:12}}>
+          {/* Logo */}
+          <a href="#top" onClick={(e)=>onNav(e,'#top')} style={{display:'flex',alignItems:'center',gap:8,textDecoration:'none',flexShrink:0}}>
+            <img src={(window.__resources&&window.__resources.logo)||"uploads/logo-ei.png"} alt="EcoInsight" style={{height:isMobile?40:54,width:'auto'}}/>
+            <span style={{fontFamily:'Plus Jakarta Sans,sans-serif',fontWeight:800,fontSize:isMobile?22:28,color:t.text,letterSpacing:'-.022em'}}>
+              <span style={{color:t.accent}}>Eco</span>Insight
+            </span>
+          </a>
+
+          {/* Desktop nav */}
+          {!isCompact && (
+            <nav style={{display:'flex',gap:2}}>
+              {nav.map(([l,href]) => (
+                <a key={l} href={href} onClick={(e)=>onNav(e,href)}
+                  style={{color:t.textMuted,textDecoration:'none',fontSize:14,fontWeight:500,padding:'7px 11px',borderRadius:7,transition:'all .18s',fontFamily:'DM Sans,sans-serif',whiteSpace:'nowrap'}}
+                  onMouseEnter={e=>{e.currentTarget.style.color=t.text;e.currentTarget.style.background=t.border}}
+                  onMouseLeave={e=>{e.currentTarget.style.color=t.textMuted;e.currentTarget.style.background='transparent'}}
+                >{l}</a>
+              ))}
+            </nav>
+          )}
+
+          {/* Desktop controls */}
+          {!isCompact && (
+            <div style={{display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
+              <div style={{display:'flex',alignItems:'center',gap:1,background:t.card,border:`1px solid ${t.border}`,borderRadius:20,padding:3}}>
+                {[['es','ES'],['en','EN']].map(([code,lbl])=>(
+                  <button key={code} onClick={()=>setLang(code)} aria-pressed={lang===code}
+                    style={{border:'none',cursor:'pointer',fontFamily:'Plus Jakarta Sans,sans-serif',fontWeight:700,fontSize:12,padding:'5px 12px',borderRadius:16,transition:'all .2s',background:lang===code?t.accent:'transparent',color:lang===code?t.ctaText:t.textMuted}}>{lbl}</button>
+                ))}
+              </div>
+              <div style={{display:'flex',gap:5,alignItems:'center'}}>
+                {Object.values(window.THEMES).map(th => (
+                  <button key={th.id} onClick={()=>setTheme(th.id)} title={th.label}
+                    style={{width:theme===th.id?22:10,height:10,borderRadius:5,background:th.dot,border:'none',cursor:'pointer',opacity:theme===th.id?1:.38,transition:'all .28s',padding:0}}/>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Mobile hamburger */}
+          {isCompact && (
+            <button onClick={()=>setMenuOpen(o=>!o)} aria-label={menuOpen?'Cerrar menú':'Abrir menú'}
+              style={{flexShrink:0,width:42,height:42,borderRadius:10,border:`1px solid ${t.border}`,background:menuOpen?t.accentDim:t.card,cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:5,transition:'all .2s'}}>
+              <span style={{display:'block',width:18,height:2,background:menuOpen?t.accent:t.text,borderRadius:2,transition:'all .25s',transform:menuOpen?'rotate(45deg) translate(5px,5px)':'none'}}/>
+              <span style={{display:'block',width:18,height:2,background:menuOpen?t.accent:t.text,borderRadius:2,transition:'all .25s',opacity:menuOpen?0:1}}/>
+              <span style={{display:'block',width:18,height:2,background:menuOpen?t.accent:t.text,borderRadius:2,transition:'all .25s',transform:menuOpen?'rotate(-45deg) translate(5px,-5px)':'none'}}/>
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* Mobile menu overlay */}
+      {isCompact && menuOpen && (
+        <div style={{position:'fixed',inset:0,zIndex:199,background:t.bg+'FA',backdropFilter:'blur(12px)',paddingTop:isMobile?64:80,display:'flex',flexDirection:'column',animation:'fadeIn .18s ease'}}>
+          <nav style={{flex:1,overflowY:'auto',padding:'24px 24px 0'}}>
+            {nav.map(([l,href])=>(
+              <a key={l} href={href} onClick={(e)=>onNav(e,href)}
+                style={{display:'block',color:t.text,textDecoration:'none',fontSize:22,fontWeight:700,fontFamily:'Plus Jakarta Sans',padding:'16px 0',borderBottom:`1px solid ${t.border}`,transition:'color .15s'}}
+                onMouseEnter={e=>e.currentTarget.style.color=t.accent}
+                onMouseLeave={e=>e.currentTarget.style.color=t.text}>{l}</a>
             ))}
-          </div>
-          {/* theme dots */}
-          <div style={{display:'flex',gap:5,alignItems:'center'}} title={L('Cambiar variación visual','Switch visual variant')}>
-            {Object.values(window.THEMES).map(th => (
-              <button key={th.id} onClick={()=>setTheme(th.id)} title={`${th.label} · ${th.tagline}`}
-                aria-label={L('Tema visual','Visual theme')+': '+th.label} aria-pressed={theme===th.id}
-                style={{width:theme===th.id?24:11,height:11,borderRadius:6,background:th.dot,border:'none',cursor:'pointer',opacity:theme===th.id?1:.38,transition:'all .28s',padding:0}}
-              />
-            ))}
+          </nav>
+          <div style={{padding:'28px 24px 40px',display:'flex',flexDirection:'column',gap:20}}>
+            {/* lang toggle */}
+            <div style={{display:'flex',gap:8,alignItems:'center'}}>
+              <span style={{fontSize:12,color:t.textMuted,fontFamily:'Plus Jakarta Sans',fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',minWidth:60}}>{L('Idioma','Language')}</span>
+              <div style={{display:'flex',gap:1,background:t.card,border:`1px solid ${t.border}`,borderRadius:20,padding:3}}>
+                {[['es','ES'],['en','EN']].map(([code,lbl])=>(
+                  <button key={code} onClick={()=>setLang(code)}
+                    style={{border:'none',cursor:'pointer',fontFamily:'Plus Jakarta Sans',fontWeight:700,fontSize:13,padding:'7px 16px',borderRadius:16,transition:'all .2s',background:lang===code?t.accent:'transparent',color:lang===code?t.ctaText:t.textMuted}}>{lbl}</button>
+                ))}
+              </div>
+            </div>
+            {/* theme dots */}
+            <div style={{display:'flex',gap:8,alignItems:'center'}}>
+              <span style={{fontSize:12,color:t.textMuted,fontFamily:'Plus Jakarta Sans',fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',minWidth:60}}>{L('Tema','Theme')}</span>
+              <div style={{display:'flex',gap:8}}>
+                {Object.values(window.THEMES).map(th=>(
+                  <button key={th.id} onClick={()=>setTheme(th.id)} title={th.label}
+                    style={{width:theme===th.id?32:22,height:22,borderRadius:11,background:th.dot,border:`2px solid ${theme===th.id?th.dot:'transparent'}`,cursor:'pointer',opacity:theme===th.id?1:.5,transition:'all .25s',padding:0,boxShadow:theme===th.id?`0 0 0 3px ${th.dot}44`:''}}/>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      )}
+    </React.Fragment>
   );
 }
 window.EcoHeader = EcoHeader;
@@ -1922,6 +1991,7 @@ window.EcoHeader = EcoHeader;
 /* ═══ HERO ═══ */
 function EcoHero({t, lang, go}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const DashCard = () => (
     <div className="dash-card" style={{background:t.card,border:`1px solid ${t.borderStrong}`,borderRadius:20,padding:'24px 26px',width:308,boxShadow:t.dark?'0 40px 90px rgba(0,0,0,.5)':'0 40px 80px rgba(0,0,0,.13)'}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
@@ -1964,19 +2034,19 @@ function EcoHero({t, lang, go}) {
     {node:'WCAG AA', l:L('Accesibilidad','Accessibility')},
   ];
   return (
-    <section style={{position:'relative',overflow:'hidden',minHeight:'100vh',display:'flex',alignItems:'center',background:t.heroBg,paddingTop:132,paddingBottom:70}}>
+    <section style={{position:'relative',overflow:'hidden',minHeight:'100vh',display:'flex',alignItems:'center',background:t.heroBg,paddingTop:bp==='sm'?96:132,paddingBottom:70}}>
       <div aria-hidden="true" style={{position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none'}}>
         <div className="aurora aurora-1" style={{background:t.accent}}/>
         <div className="aurora aurora-2" style={{background:t.accent2}}/>
       </div>
-      <div style={{position:'relative',zIndex:1,maxWidth:1180,margin:'0 auto',padding:'0 32px',width:'100%'}}>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 360px',gap:54,alignItems:'center'}}>
+      <div style={{position:'relative',zIndex:1,maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px',width:'100%'}}>
+        <div style={{display:'grid',gridTemplateColumns:bp==='lg'?'1fr 360px':'1fr',gap:bp==='sm'?28:54,alignItems:'center'}}>
           <div>
             <div className="ha1" style={{display:'inline-flex',alignItems:'center',gap:8,background:t.accentDim,border:`1px solid ${t.accent}35`,borderRadius:20,padding:'5px 14px',marginBottom:24,whiteSpace:'nowrap'}}>
               <span style={{width:6,height:6,borderRadius:'50%',background:t.accent,display:'inline-block',flexShrink:0}}/>
               <span style={{color:t.accent,fontSize:11,fontWeight:700,letterSpacing:'.09em',textTransform:'uppercase',fontFamily:'Plus Jakarta Sans'}}>Climate Tech · ESG · LATAM</span>
             </div>
-            <h1 className="ha2" style={{fontSize:56,fontWeight:800,lineHeight:1.08,letterSpacing:'-.03em',fontFamily:'Plus Jakarta Sans,sans-serif',color:t.text,marginBottom:20}}>
+            <h1 className="ha2" style={{fontSize:bp==='sm'?34:bp==='md'?44:56,fontWeight:800,lineHeight:1.08,letterSpacing:'-.03em',fontFamily:'Plus Jakarta Sans,sans-serif',color:t.text,marginBottom:20}}>
               {lang==='en'
                 ? <>Turning<br/>environmental data<br/>into <em style={{fontStyle:'normal',color:t.accent}}>sustainable</em><br/>decisions.</>
                 : <>Transformando<br/>datos ambientales<br/>en <em style={{fontStyle:'normal',color:t.accent}}>decisiones</em><br/>sostenibles.</>}
@@ -2005,7 +2075,7 @@ function EcoHero({t, lang, go}) {
               ))}
             </div>
           </div>
-          <div style={{display:'flex',justifyContent:'center'}}><window.EcoDashboard t={t} lang={lang}/></div>
+          {bp !== 'sm' && <div style={{display:'flex',justifyContent:'center'}}><window.EcoDashboard t={t} lang={lang}/></div>}
         </div>
       </div>
     </section>
@@ -2016,6 +2086,7 @@ window.EcoHero = EcoHero;
 /* ═══ FOOTER ═══ */
 function EcoFooter({t, lang}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const logoBox={display:'flex',alignItems:'center'};
   const links=[
     [L('Plataforma','Platform'),[L('Calculadora GEI','GHG Calculator'),L('Dashboard ESG','ESG Dashboard'),L('Soluciones','Solutions'),L('SaaS Empresarial','Enterprise SaaS')]],
@@ -2024,7 +2095,7 @@ function EcoFooter({t, lang}) {
   ];
   return (
     <footer style={{background:t.bg,borderTop:`1px solid ${t.border}`,padding:'60px 0 36px'}}>
-      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:48,flexWrap:'wrap',gap:32}}>
           <div style={{maxWidth:240}}>
             <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
@@ -2206,6 +2277,7 @@ window.ExtLink = function ExtLink({a, t, lang, small}){
 /* ═══ NEWS CENTER ═══ */
 function EcoNews({t, lang, go}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const NEWS = window.NEWS, CC = window.CAT_COLORS_NEWS, CEN = window.CAT_EN;
   const [cat, setCat] = React.useState('Todos');
   const [region, setRegion] = React.useState('todas');
@@ -2293,7 +2365,7 @@ function EcoNews({t, lang, go}) {
 
   return (
     <section id="noticias" style={{background:t.bg,padding:'96px 0',borderTop:`1px solid ${t.border}`,scrollMarginTop:84}}>
-      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <Reveal>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:30,flexWrap:'wrap',gap:20}}>
           <div>
@@ -2346,7 +2418,7 @@ function EcoNews({t, lang, go}) {
         )}
 
         {featured && (
-        <div style={{display:'grid',gridTemplateColumns:'1.55fr 1fr',gap:20,marginBottom:20}}>
+        <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1.55fr 1fr':'1fr',gap:20,marginBottom:20}}>
           {/* featured */}
           <Reveal>
           <div onClick={()=>go('article',featured.id)} role="button" tabIndex={0} onKeyDown={window.openKey(()=>go('article',featured.id))} aria-label={featured.title[lang]} style={{background:t.card,border:`1px solid ${t.border}`,borderRadius:18,overflow:'hidden',cursor:'pointer',transition:'all .25s',height:'100%'}}
@@ -2391,8 +2463,8 @@ function EcoNews({t, lang, go}) {
         )}
 
         {/* recent grid + most read */}
-        <div style={{display:'grid',gridTemplateColumns:'1fr 320px',gap:20,marginTop:4}}>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:18}}>
+        <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 320px':'1fr',gap:20,marginTop:4}}>
+          <div style={{display:'grid',gridTemplateColumns:bp==='lg'?'repeat(3,1fr)':bp==='md'?'repeat(2,1fr)':'1fr',gap:18}}>
             {grid.map((a,i)=>(
               <Reveal key={a.id} delay={i*70}>
               <div onClick={()=>go('article',a.id)} role="button" tabIndex={0} onKeyDown={window.openKey(()=>go('article',a.id))} aria-label={a.title[lang]} style={{background:t.card,border:`1px solid ${t.border}`,borderRadius:14,overflow:'hidden',cursor:'pointer',transition:'all .22s',height:'100%'}}
@@ -2442,6 +2514,7 @@ window.EcoNews = EcoNews;
 /* ═══ ARTICLE READER ═══ */
 function EcoArticle({t, lang, id, go}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const NEWS = window.NEWS, CC = window.CAT_COLORS_NEWS, CEN = window.CAT_EN;
   const ALL = [...(window.__feedArticles||[]), ...NEWS];
   const seen=new Set(); const POOL = ALL.filter(x=>{ if(seen.has(x.id))return false; seen.add(x.id); return true; });
@@ -2461,7 +2534,7 @@ function EcoArticle({t, lang, id, go}) {
   );
   return (
     <article style={{background:t.bg,minHeight:'100vh',paddingTop:90,paddingBottom:80}}>
-      <div style={{maxWidth:760,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{maxWidth:760,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <button onClick={()=>go('home','#noticias')} style={{display:'inline-flex',alignItems:'center',gap:8,background:'transparent',border:`1px solid ${t.border}`,color:t.textMuted,fontSize:13,fontWeight:600,fontFamily:'Plus Jakarta Sans',padding:'8px 16px',borderRadius:20,cursor:'pointer',marginBottom:28,transition:'all .2s'}}
           onMouseEnter={e=>{e.currentTarget.style.color=t.text;e.currentTarget.style.borderColor=t.borderStrong;}}
           onMouseLeave={e=>{e.currentTarget.style.color=t.textMuted;e.currentTarget.style.borderColor=t.border;}}>
@@ -2476,7 +2549,7 @@ function EcoArticle({t, lang, id, go}) {
             <span style={{fontSize:12,color:t.textFaint,fontFamily:'DM Mono'}}>{L('Fuente','Source')}: {a.src}</span>
           )}
         </div>
-        <h1 style={{fontSize:40,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1.16,letterSpacing:'-.025em',marginBottom:22}}>{a.title[lang]}</h1>
+        <h1 style={{fontSize:bp==='sm'?26:40,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1.16,letterSpacing:'-.025em',marginBottom:22}}>{a.title[lang]}</h1>
         <div style={{borderRadius:16,overflow:'hidden',border:`1px solid ${t.border}`,marginBottom:10}}><window.NewsImg t={t} lang={lang} a={a} h={300}/></div>
         <div style={{fontSize:11,color:t.textFaint,fontFamily:'DM Sans',marginBottom:26,textAlign:'center'}}>{L('Arrastra aquí la imagen original de la noticia','Drop the original article image here')}</div>
 
@@ -2505,7 +2578,7 @@ function EcoArticle({t, lang, id, go}) {
 
         {/* impacts */}
         {hasImpacts && (
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,margin:'28px 0'}}>
+        <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 1fr':'1fr',gap:14,margin:'28px 0'}}>
           <ImpactBox label={L('Impacto para Chile','Impact for Chile')} color={t.accent} text={a.impactChile[lang]}/>
           <ImpactBox label={L('Impacto para empresas','Impact for companies')} color={t.accent2} text={a.impactEmpresas[lang]}/>
         </div>
@@ -2523,7 +2596,7 @@ function EcoArticle({t, lang, id, go}) {
 
         {/* related */}
         <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:t.textMuted,marginBottom:16,fontFamily:'Plus Jakarta Sans'}}>{L('Artículos relacionados','Related articles')}</div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:14}}>
+        <div style={{display:'grid',gridTemplateColumns:bp==='lg'?'repeat(3,1fr)':'repeat(2,1fr)',gap:14}}>
           {relFill.map(r=>(
             <div key={r.id} onClick={()=>go('article',r.id)} role="button" tabIndex={0} onKeyDown={window.openKey(()=>go('article',r.id))} aria-label={r.title[lang]} style={{background:t.card,border:`1px solid ${t.border}`,borderRadius:12,overflow:'hidden',cursor:'pointer',transition:'all .2s'}}
               onMouseEnter={e=>{e.currentTarget.style.borderColor=CC[r.cat]||t.accent;e.currentTarget.style.transform='translateY(-3px)';}}
@@ -2586,6 +2659,7 @@ function CalcSelect({t, label, value, onChange, options}){
   );
 }
 function CalcScope({t, id, title, sub, color, val, open, setOpen, children}){
+  const bp = window.useBreakpoint();
   return (
     <div style={{border:`1px solid ${open===id?color+'55':t.border}`,borderRadius:12,overflow:'hidden',marginBottom:10,transition:'border-color .2s'}}>
       <button onClick={()=>setOpen(open===id?null:id)} style={{width:'100%',padding:'14px 18px',background:open===id?color+'13':t.surface,border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between',transition:'background .2s'}}>
@@ -2601,7 +2675,7 @@ function CalcScope({t, id, title, sub, color, val, open, setOpen, children}){
           <span style={{color:t.textMuted,transform:open===id?'rotate(180deg)':'none',transition:'transform .22s',display:'block'}}>▾</span>
         </div>
       </button>
-      {open===id&&<div style={{padding:18,background:t.card,display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>{children}</div>}
+      {open===id&&<div style={{padding:18,background:t.card,display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 1fr':'1fr',gap:14}}>{children}</div>}
     </div>
   );
 }
@@ -2651,6 +2725,7 @@ window.EsgLegend = EsgLegend;
 
 function EcoCalculator({t, lang, go}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const GRIDS = window.GRIDS, HF = window.HOME_FACTORS, GC = window.GRADE_COLORS(t);
   const SAVE_KEY='ei_calc_v1', HSAVE_KEY='ei_calc_home_v1', MODE_KEY='ei_calc_mode';
   const saved  = (()=>{ try{ return JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'); }catch(e){ return {}; } })();
@@ -2760,7 +2835,7 @@ function EcoCalculator({t, lang, go}) {
 
   return (
     <section id="calculadora" style={{background:t.bg,padding:'96px 0',borderTop:`1px solid ${t.border}`,scrollMarginTop:84}}>
-      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <Reveal>
         <div style={{marginBottom:30}}>
           <div style={{display:'inline-flex',alignItems:'center',gap:8,background:t.accentDim,border:`1px solid ${t.accent}35`,borderRadius:20,padding:'5px 14px',marginBottom:18}}>
@@ -2779,12 +2854,12 @@ function EcoCalculator({t, lang, go}) {
         </div>
         </Reveal>
 
-        <div style={{display:'grid',gridTemplateColumns:'1fr 355px',gap:32,alignItems:'start'}}>
+        <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 355px':'1fr',gap:32,alignItems:'start'}}>
           <Reveal>
           <div>
             {mode==='empresa' ? (
             <React.Fragment>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:18}}>
+              <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 1fr':'1fr',gap:14,marginBottom:18}}>
                 <CalcSelect t={t} label={L('Sector / Industria','Sector / Industry')} value={industry} onChange={e=>setIndustry(e.target.value)} options={industries}/>
                 <CalcSelect t={t} label={L('Factor red eléctrica','Grid factor')} value={country} onChange={e=>setCountry(e.target.value)} options={gridOptions}/>
               </div>
@@ -2811,7 +2886,7 @@ function EcoCalculator({t, lang, go}) {
             </React.Fragment>
             ) : (
             <React.Fragment>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:18}}>
+              <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 1fr':'1fr',gap:14,marginBottom:18}}>
                 <CalcField t={t} label={L('Personas en el hogar','People in household')} value={people} onChange={e=>setPeople(e.target.value)} unit={L('pers.','ppl')}/>
                 <CalcSelect t={t} label={L('Factor red eléctrica','Grid factor')} value={hcountry} onChange={e=>setHcountry(e.target.value)} options={gridOptions}/>
               </div>
@@ -2844,7 +2919,7 @@ function EcoCalculator({t, lang, go}) {
             {/* EQUIVALENCES (shared) */}
             <div style={{marginTop:26}}>
               <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:t.textMuted,marginBottom:14,fontFamily:'Plus Jakarta Sans'}}>{L('Equivalencias del mundo real','Real-world equivalences')}</div>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:10}}>
+              <div style={{display:'grid',gridTemplateColumns:bp==='sm'?'repeat(3,1fr)':'repeat(5,1fr)',gap:10}}>
                 {EQ.map(e=>(
                   <div key={e.k} style={{background:t.card,border:`1px solid ${t.border}`,borderRadius:12,padding:'14px 12px',textAlign:'center'}}>
                     <div style={{fontSize:20,marginBottom:7}}>{e.ic}</div>
@@ -2859,7 +2934,7 @@ function EcoCalculator({t, lang, go}) {
           </Reveal>
 
           {/* Results Panel */}
-          <div style={{position:'sticky',top:100,background:t.card,border:`1px solid ${t.border}`,borderRadius:20,padding:26}}>
+          <div style={{position:bp!=='sm'?'sticky':'static',top:100,background:t.card,border:`1px solid ${t.border}`,borderRadius:20,padding:26}}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
               <span style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:t.textMuted,fontFamily:'Plus Jakarta Sans'}}>{L('Resultado estimado','Estimated result')}</span>
               <span style={{fontSize:10,fontWeight:700,color:t.accent,fontFamily:'Plus Jakarta Sans',background:t.accentDim,border:`1px solid ${t.accent}33`,borderRadius:20,padding:'3px 10px'}}>{mode==='empresa'?L('Empresa','Company'):L('Hogar','Household')}</span>
@@ -2916,6 +2991,7 @@ window.EcoCalculator = EcoCalculator;
 /* ═══ PDF REPORT PREVIEW ═══ */
 function EcoReport({t, lang, data, go}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   React.useEffect(()=>{ window.scrollTo(0,0); },[]);
   if(!data){ go('calculator'); return null; }
   const {tot,gr,eq,sector,date} = data;
@@ -2951,7 +3027,7 @@ function EcoReport({t, lang, data, go}) {
   return (
     <div style={{background:t.bg,minHeight:'100vh',paddingTop:84,paddingBottom:70}}>
       {/* toolbar */}
-      <div style={{maxWidth:820,margin:'0 auto 18px',padding:'0 24px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+      <div style={{maxWidth:820,margin:'0 auto 18px',padding:bp==='sm'?'0 16px':'0 24px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap'}}>
         <button onClick={()=>go('calculator')} style={{display:'inline-flex',alignItems:'center',gap:8,background:'transparent',border:`1px solid ${t.border}`,color:t.textMuted,fontSize:13,fontWeight:600,fontFamily:'Plus Jakarta Sans',padding:'8px 16px',borderRadius:20,cursor:'pointer'}}>← {L('Volver a la calculadora','Back to calculator')}</button>
         <div style={{display:'flex',gap:10}}>
           <button onClick={()=>window.print()} style={{background:'transparent',border:`1px solid ${t.borderStrong}`,color:t.text,fontSize:13,fontWeight:700,fontFamily:'Plus Jakarta Sans',padding:'9px 18px',borderRadius:9,cursor:'pointer'}}>{L('Imprimir','Print')}</button>
@@ -2961,7 +3037,7 @@ function EcoReport({t, lang, data, go}) {
       </div>
 
       {/* PAPER */}
-      <div style={{maxWidth:820,margin:'0 auto',padding:'0 24px'}}>
+      <div style={{maxWidth:820,margin:'0 auto',padding:bp==='sm'?'0 16px':'0 24px'}}>
         <div className="paper-print" style={{background:'#FFFFFF',borderRadius:6,overflow:'hidden',boxShadow:'0 30px 80px rgba(0,0,0,.4)',fontFamily:'DM Sans,sans-serif'}}>
           {/* header band */}
           <div style={{background:'#0D1C32',padding:'26px 40px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
@@ -3009,7 +3085,7 @@ function EcoReport({t, lang, data, go}) {
 
             {/* equivalences */}
             <div style={{fontSize:11,color:INK,textTransform:'uppercase',letterSpacing:'.1em',fontWeight:700,fontFamily:'Plus Jakarta Sans',marginBottom:14}}>{L('Equivalencias','Equivalences')}</div>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:10,marginBottom:30}}>
+            <div style={{display:'grid',gridTemplateColumns:bp==='sm'?'repeat(3,1fr)':'repeat(5,1fr)',gap:10,marginBottom:30}}>
               {[['🌳',eq.trees,L('árboles/año','trees/yr')],['⛽',eq.fuel,L('litros','litres')],['🚗',eq.km,L('km auto','car km')],['🔋',eq.phone,L('cargas móvil','phone chg')],['⚡',eq.kwh,L('kWh','kWh')]].map(([ic,val,lb],i)=>(
                 <div key={i} style={{border:`1px solid ${LINE}`,borderRadius:10,padding:'14px 8px',textAlign:'center'}}>
                   <div style={{fontSize:18,marginBottom:6}}>{ic}</div>
@@ -3021,7 +3097,7 @@ function EcoReport({t, lang, data, go}) {
 
             {/* recommendations */}
             <div style={{fontSize:11,color:INK,textTransform:'uppercase',letterSpacing:'.1em',fontWeight:700,fontFamily:'Plus Jakarta Sans',marginBottom:14}}>{L('Recomendaciones','Recommendations')}</div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:30}}>
+            <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 1fr':'1fr',gap:12,marginBottom:30}}>
               {recs.map((r,i)=>(
                 <div key={i} style={{display:'flex',gap:11,alignItems:'flex-start'}}>
                   <span style={{flexShrink:0,width:22,height:22,borderRadius:6,background:'#E8F4EE',color:GREEN,fontSize:12,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Plus Jakarta Sans'}}>{i+1}</span>
@@ -3062,6 +3138,7 @@ window.EcoReport = EcoReport;
    ═══════════════════════════════════════════════════════════ */
 function EcoSolutions({t, lang, go}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const S = window.SOLUTIONS;
   const [group, setGroup] = React.useState('chile');
   const [sel, setSel] = React.useState(null);
@@ -3107,7 +3184,7 @@ function EcoSolutions({t, lang, go}) {
 
   return (
     <section id="soluciones" style={{background:t.bg,padding:'96px 0',borderTop:`1px solid ${t.border}`,scrollMarginTop:84}}>
-      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <Reveal>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:36,flexWrap:'wrap',gap:22}}>
           <div>
@@ -3126,7 +3203,7 @@ function EcoSolutions({t, lang, go}) {
         </div>
         </Reveal>
         <Reveal>
-        <div style={{display:'grid',gridTemplateColumns:`repeat(${group==='chile'?4:3},1fr)`,gap:18}}>
+        <div style={{display:'grid',gridTemplateColumns:bp==='lg'?`repeat(${group==='chile'?4:3},1fr)`:bp==='md'?'repeat(2,1fr)':'1fr',gap:18}}>
           {list.map(Card)}
         </div>
         </Reveal>
@@ -3136,7 +3213,7 @@ function EcoSolutions({t, lang, go}) {
       {detail && (
         <div onClick={()=>setSel(null)} style={{position:'fixed',inset:0,zIndex:500,background:'rgba(4,10,20,.66)',backdropFilter:'blur(6px)',display:'flex',alignItems:'center',justifyContent:'center',padding:24,animation:'fadeIn .2s ease'}}>
           <div onClick={e=>e.stopPropagation()} style={{background:t.surface,border:`1px solid ${t.borderStrong}`,borderRadius:20,maxWidth:620,width:'100%',maxHeight:'88vh',overflowY:'auto',boxShadow:'0 40px 100px rgba(0,0,0,.5)'}}>
-            <div style={{padding:'30px 34px 26px'}}>
+            <div style={{padding:bp==='sm'?'20px 20px 20px':'30px 34px 26px'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20}}>
                 <div style={{display:'flex',alignItems:'center',gap:14}}>
                   <div style={{width:54,height:54,borderRadius:13,background:t.accentDim,border:`1px solid ${t.accent}33`,display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -3150,7 +3227,7 @@ function EcoSolutions({t, lang, go}) {
                 <button onClick={()=>setSel(null)} aria-label="Cerrar" style={{flexShrink:0,width:34,height:34,borderRadius:'50%',border:`1px solid ${t.border}`,background:t.card,color:t.textMuted,fontSize:16,cursor:'pointer',lineHeight:1}}>×</button>
               </div>
               <p style={{fontSize:15,color:t.text,lineHeight:1.65,fontFamily:'DM Sans',marginBottom:26}}>{detail.desc[lang]}</p>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:26,marginBottom:26}}>
+              <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 1fr':'1fr',gap:26,marginBottom:26}}>
                 <Col title={L('Beneficios','Benefits')} items={detail.benefits[lang]}/>
                 <Col title={L('Casos de uso','Use cases')} items={detail.uses[lang]}/>
               </div>
@@ -3173,6 +3250,7 @@ window.EcoSolutions = EcoSolutions;
 /* ═══ MARKETPLACE ═══ */
 function EcoMarketplace({t, lang}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const [cat, setCat] = React.useState('todos');
   const [hov, setHov] = React.useState(null);
   const [live, setLive] = React.useState(null);
@@ -3237,7 +3315,7 @@ function EcoMarketplace({t, lang}) {
   const sinceTxt = (()=>{ if(!lastSync) return ''; const s=Math.max(0,Math.floor((Date.now()-lastSync)/1000)); return s<60?(L('hace ','')+s+'s'+(lang==='en'?' ago':'')):s<3600?(L('hace ','')+Math.floor(s/60)+' min'+(lang==='en'?' ago':'')):(L('hace ','')+Math.floor(s/3600)+' h'+(lang==='en'?' ago':'')); })();
   return (
     <section id="marketplace" style={{background:t.surface,padding:'96px 0',borderTop:`1px solid ${t.border}`,scrollMarginTop:84}}>
-      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <Reveal>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:44,flexWrap:'wrap',gap:22}}>
           <div>
@@ -3272,7 +3350,7 @@ function EcoMarketplace({t, lang}) {
           </div>
         </div>
         </Reveal>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:22}}>
+        <div style={{display:'grid',gridTemplateColumns:bp==='lg'?'repeat(3,1fr)':bp==='md'?'repeat(2,1fr)':'1fr',gap:22}}>
           {shown.map((tp,i)=>(
             <Reveal key={tp.listingId} delay={(i%3)*70}>
             <div onMouseEnter={()=>setHov(tp.listingId)} onMouseLeave={()=>setHov(null)}
@@ -3314,6 +3392,7 @@ window.EcoMarketplace = EcoMarketplace;
 /* ═══ LEAD CAPTURE FORM (no native <form>; controlled + client validation) ═══ */
 function EcoLeadForm({t, lang}){
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const [f, setF] = React.useState({name:'',email:'',company:'',interest:''});
   const [err, setErr] = React.useState({});
   const [sent, setSent] = React.useState(false);
@@ -3363,7 +3442,7 @@ function EcoLeadForm({t, lang}){
       ) : (
         <React.Fragment>
           <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:t.accent,marginBottom:14,fontFamily:'Plus Jakarta Sans'}}>{L('Habla con un especialista','Talk to a specialist')}</div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:16}}>
+          <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 1fr':'1fr',gap:14,marginBottom:16}}>
             {field('name', L('Nombre','Name'))}
             {field('email', L('Email corporativo','Work email'),'email')}
             {field('company', L('Empresa','Company'))}
@@ -3380,6 +3459,7 @@ window.EcoLeadForm = EcoLeadForm;
 /* ═══ CLOSING CONVERSION BAND ═══ */
 function EcoConversion({t, lang}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const props = [
     [L('Listas para usar','Ready to use'), L('Plantillas en Excel, Power BI y PDF, editables y sin código.','Excel, Power BI and PDF templates, editable and no-code.')],
     [L('Estándares reconocidos','Recognized standards'), L('Alineadas con GHG Protocol, GRI, ISO 14064 y TCFD.','Aligned with GHG Protocol, GRI, ISO 14064 and TCFD.')],
@@ -3387,23 +3467,23 @@ function EcoConversion({t, lang}) {
   ];
   return (
     <section style={{background:t.bg,borderTop:`1px solid ${t.border}`,padding:'92px 0'}}>
-      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <Reveal>
         <div style={{position:'relative',overflow:'hidden',borderRadius:24,border:`1px solid ${t.borderStrong}`,
           background:`radial-gradient(ellipse 70% 120% at 85% 10%, ${t.accent}22 0%, transparent 55%), radial-gradient(ellipse 60% 100% at 10% 90%, ${t.accent2}1A 0%, transparent 50%), ${t.card}`,
-          padding:'56px 56px 52px'}}>
+          padding:bp==='sm'?'32px 20px 28px':'56px 56px 52px'}}>
           <div style={{maxWidth:680}}>
             <div style={{display:'inline-flex',alignItems:'center',gap:8,background:t.accentDim,border:`1px solid ${t.accent}40`,borderRadius:20,padding:'5px 14px',marginBottom:22}}>
               <span style={{color:t.accent,fontSize:11,fontWeight:700,letterSpacing:'.09em',textTransform:'uppercase',fontFamily:'Plus Jakarta Sans'}}>{L('Tu siguiente paso','Your next step')}</span>
             </div>
-            <h2 style={{fontSize:42,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1.12,letterSpacing:'-.025em',marginBottom:16}}>
+            <h2 style={{fontSize:bp==='sm'?28:42,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1.12,letterSpacing:'-.025em',marginBottom:16}}>
               {L('De la medición a un reporte profesional, hoy mismo.','From measurement to a professional report, today.')}
             </h2>
             <p style={{fontSize:17,color:t.textMuted,lineHeight:1.6,fontFamily:'DM Sans',marginBottom:34,maxWidth:560}}>
               {L('Ya conoces tu huella. Da el siguiente paso con plantillas y reportes ESG listos para implementar, creados por especialistas en sostenibilidad.',
                  'You already know your footprint. Take the next step with ready-to-implement ESG templates and reports built by sustainability specialists.')}
             </p>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20,marginBottom:38}}>
+            <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'repeat(3,1fr)':'1fr',gap:20,marginBottom:38}}>
               {props.map(([h,d],i)=>(
                 <div key={i} style={{borderTop:`2px solid ${t.accent}`,paddingTop:13}}>
                   <div style={{fontSize:14,fontWeight:700,color:t.text,fontFamily:'Plus Jakarta Sans',marginBottom:5}}>{h}</div>
@@ -3446,6 +3526,7 @@ window.EcoConversion = EcoConversion;
    ═══════════════════════════════════════════════════════════ */
 function EcoRegulations({ t, lang }) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const Reveal = window.Reveal;
   const PROJECTS = window.REG_PROJECTS, FACTORS = window.REG_FACTORS, LAWS = window.REG_LAWS, CATS = window.REG_CATS;
 
@@ -3482,7 +3563,7 @@ function EcoRegulations({ t, lang }) {
       <div aria-hidden="true" style={{position:'absolute',top:-160,left:'8%',width:420,height:420,borderRadius:'50%',background:t.accent,opacity:.06,filter:'blur(90px)',pointerEvents:'none'}}/>
       <div aria-hidden="true" style={{position:'absolute',bottom:-200,right:'4%',width:480,height:480,borderRadius:'50%',background:t.accent2,opacity:.05,filter:'blur(100px)',pointerEvents:'none'}}/>
 
-      <div style={{position:'relative',maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{position:'relative',maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <Reveal>
           <div style={{maxWidth:680,marginBottom:44}}>
             <div style={{display:'inline-flex',alignItems:'center',gap:8,background:t.accent2Dim,border:`1px solid ${t.accent2}35`,borderRadius:20,padding:'5px 14px',marginBottom:18}}>
@@ -3501,7 +3582,7 @@ function EcoRegulations({ t, lang }) {
           </div>
         </Reveal>
         <Reveal>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:38}}>
+          <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'repeat(4,1fr)':'repeat(2,1fr)',gap:12,marginBottom:38}}>
             {PROJECTS.map((p,i) => {
               const on = proj === p.id;
               return (
@@ -3582,7 +3663,7 @@ function EcoRegulations({ t, lang }) {
                     <span style={{fontSize:12.5,fontWeight:700,color:t.text,fontFamily:'Plus Jakarta Sans',textTransform:'uppercase',letterSpacing:'.06em'}}>{meta.label[lang]}</span>
                     <span style={{flex:1,height:1,background:t.border}}/>
                   </div>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:14}}>
+                  <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'repeat(2,1fr)':'1fr',gap:14}}>
                     {ids.map((id,ci) => {
                       const law = LAWS[id];
                       return (
@@ -3717,6 +3798,7 @@ function App() {
   );
 }
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+
 
 </script>
 </body>

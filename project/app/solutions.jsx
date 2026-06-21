@@ -3,6 +3,7 @@
    ═══════════════════════════════════════════════════════════ */
 function EcoSolutions({t, lang, go}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const S = window.SOLUTIONS;
   const [group, setGroup] = React.useState('chile');
   const [sel, setSel] = React.useState(null);
@@ -48,7 +49,7 @@ function EcoSolutions({t, lang, go}) {
 
   return (
     <section id="soluciones" style={{background:t.bg,padding:'96px 0',borderTop:`1px solid ${t.border}`,scrollMarginTop:84}}>
-      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <Reveal>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:36,flexWrap:'wrap',gap:22}}>
           <div>
@@ -67,7 +68,7 @@ function EcoSolutions({t, lang, go}) {
         </div>
         </Reveal>
         <Reveal>
-        <div style={{display:'grid',gridTemplateColumns:`repeat(${group==='chile'?4:3},1fr)`,gap:18}}>
+        <div style={{display:'grid',gridTemplateColumns:bp==='lg'?`repeat(${group==='chile'?4:3},1fr)`:bp==='md'?'repeat(2,1fr)':'1fr',gap:18}}>
           {list.map(Card)}
         </div>
         </Reveal>
@@ -77,7 +78,7 @@ function EcoSolutions({t, lang, go}) {
       {detail && (
         <div onClick={()=>setSel(null)} style={{position:'fixed',inset:0,zIndex:500,background:'rgba(4,10,20,.66)',backdropFilter:'blur(6px)',display:'flex',alignItems:'center',justifyContent:'center',padding:24,animation:'fadeIn .2s ease'}}>
           <div onClick={e=>e.stopPropagation()} style={{background:t.surface,border:`1px solid ${t.borderStrong}`,borderRadius:20,maxWidth:620,width:'100%',maxHeight:'88vh',overflowY:'auto',boxShadow:'0 40px 100px rgba(0,0,0,.5)'}}>
-            <div style={{padding:'30px 34px 26px'}}>
+            <div style={{padding:bp==='sm'?'20px 20px 20px':'30px 34px 26px'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20}}>
                 <div style={{display:'flex',alignItems:'center',gap:14}}>
                   <div style={{width:54,height:54,borderRadius:13,background:t.accentDim,border:`1px solid ${t.accent}33`,display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -91,7 +92,7 @@ function EcoSolutions({t, lang, go}) {
                 <button onClick={()=>setSel(null)} aria-label="Cerrar" style={{flexShrink:0,width:34,height:34,borderRadius:'50%',border:`1px solid ${t.border}`,background:t.card,color:t.textMuted,fontSize:16,cursor:'pointer',lineHeight:1}}>×</button>
               </div>
               <p style={{fontSize:15,color:t.text,lineHeight:1.65,fontFamily:'DM Sans',marginBottom:26}}>{detail.desc[lang]}</p>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:26,marginBottom:26}}>
+              <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 1fr':'1fr',gap:26,marginBottom:26}}>
                 <Col title={L('Beneficios','Benefits')} items={detail.benefits[lang]}/>
                 <Col title={L('Casos de uso','Use cases')} items={detail.uses[lang]}/>
               </div>
@@ -114,6 +115,7 @@ window.EcoSolutions = EcoSolutions;
 /* ═══ MARKETPLACE ═══ */
 function EcoMarketplace({t, lang}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const [cat, setCat] = React.useState('todos');
   const [hov, setHov] = React.useState(null);
   const [live, setLive] = React.useState(null);
@@ -178,7 +180,7 @@ function EcoMarketplace({t, lang}) {
   const sinceTxt = (()=>{ if(!lastSync) return ''; const s=Math.max(0,Math.floor((Date.now()-lastSync)/1000)); return s<60?(L('hace ','')+s+'s'+(lang==='en'?' ago':'')):s<3600?(L('hace ','')+Math.floor(s/60)+' min'+(lang==='en'?' ago':'')):(L('hace ','')+Math.floor(s/3600)+' h'+(lang==='en'?' ago':'')); })();
   return (
     <section id="marketplace" style={{background:t.surface,padding:'96px 0',borderTop:`1px solid ${t.border}`,scrollMarginTop:84}}>
-      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <Reveal>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:44,flexWrap:'wrap',gap:22}}>
           <div>
@@ -213,7 +215,7 @@ function EcoMarketplace({t, lang}) {
           </div>
         </div>
         </Reveal>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:22}}>
+        <div style={{display:'grid',gridTemplateColumns:bp==='lg'?'repeat(3,1fr)':bp==='md'?'repeat(2,1fr)':'1fr',gap:22}}>
           {shown.map((tp,i)=>(
             <Reveal key={tp.listingId} delay={(i%3)*70}>
             <div onMouseEnter={()=>setHov(tp.listingId)} onMouseLeave={()=>setHov(null)}
@@ -255,6 +257,7 @@ window.EcoMarketplace = EcoMarketplace;
 /* ═══ LEAD CAPTURE FORM (no native <form>; controlled + client validation) ═══ */
 function EcoLeadForm({t, lang}){
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const [f, setF] = React.useState({name:'',email:'',company:'',interest:''});
   const [err, setErr] = React.useState({});
   const [sent, setSent] = React.useState(false);
@@ -304,7 +307,7 @@ function EcoLeadForm({t, lang}){
       ) : (
         <React.Fragment>
           <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:t.accent,marginBottom:14,fontFamily:'Plus Jakarta Sans'}}>{L('Habla con un especialista','Talk to a specialist')}</div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:16}}>
+          <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 1fr':'1fr',gap:14,marginBottom:16}}>
             {field('name', L('Nombre','Name'))}
             {field('email', L('Email corporativo','Work email'),'email')}
             {field('company', L('Empresa','Company'))}
@@ -321,6 +324,7 @@ window.EcoLeadForm = EcoLeadForm;
 /* ═══ CLOSING CONVERSION BAND ═══ */
 function EcoConversion({t, lang}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const props = [
     [L('Listas para usar','Ready to use'), L('Plantillas en Excel, Power BI y PDF, editables y sin código.','Excel, Power BI and PDF templates, editable and no-code.')],
     [L('Estándares reconocidos','Recognized standards'), L('Alineadas con GHG Protocol, GRI, ISO 14064 y TCFD.','Aligned with GHG Protocol, GRI, ISO 14064 and TCFD.')],
@@ -328,23 +332,23 @@ function EcoConversion({t, lang}) {
   ];
   return (
     <section style={{background:t.bg,borderTop:`1px solid ${t.border}`,padding:'92px 0'}}>
-      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <Reveal>
         <div style={{position:'relative',overflow:'hidden',borderRadius:24,border:`1px solid ${t.borderStrong}`,
           background:`radial-gradient(ellipse 70% 120% at 85% 10%, ${t.accent}22 0%, transparent 55%), radial-gradient(ellipse 60% 100% at 10% 90%, ${t.accent2}1A 0%, transparent 50%), ${t.card}`,
-          padding:'56px 56px 52px'}}>
+          padding:bp==='sm'?'32px 20px 28px':'56px 56px 52px'}}>
           <div style={{maxWidth:680}}>
             <div style={{display:'inline-flex',alignItems:'center',gap:8,background:t.accentDim,border:`1px solid ${t.accent}40`,borderRadius:20,padding:'5px 14px',marginBottom:22}}>
               <span style={{color:t.accent,fontSize:11,fontWeight:700,letterSpacing:'.09em',textTransform:'uppercase',fontFamily:'Plus Jakarta Sans'}}>{L('Tu siguiente paso','Your next step')}</span>
             </div>
-            <h2 style={{fontSize:42,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1.12,letterSpacing:'-.025em',marginBottom:16}}>
+            <h2 style={{fontSize:bp==='sm'?28:42,fontWeight:800,fontFamily:'Plus Jakarta Sans',color:t.text,lineHeight:1.12,letterSpacing:'-.025em',marginBottom:16}}>
               {L('De la medición a un reporte profesional, hoy mismo.','From measurement to a professional report, today.')}
             </h2>
             <p style={{fontSize:17,color:t.textMuted,lineHeight:1.6,fontFamily:'DM Sans',marginBottom:34,maxWidth:560}}>
               {L('Ya conoces tu huella. Da el siguiente paso con plantillas y reportes ESG listos para implementar, creados por especialistas en sostenibilidad.',
                  'You already know your footprint. Take the next step with ready-to-implement ESG templates and reports built by sustainability specialists.')}
             </p>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:20,marginBottom:38}}>
+            <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'repeat(3,1fr)':'1fr',gap:20,marginBottom:38}}>
               {props.map(([h,d],i)=>(
                 <div key={i} style={{borderTop:`2px solid ${t.accent}`,paddingTop:13}}>
                   <div style={{fontSize:14,fontWeight:700,color:t.text,fontFamily:'Plus Jakarta Sans',marginBottom:5}}>{h}</div>

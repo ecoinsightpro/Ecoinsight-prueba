@@ -41,6 +41,7 @@ function CalcSelect({t, label, value, onChange, options}){
   );
 }
 function CalcScope({t, id, title, sub, color, val, open, setOpen, children}){
+  const bp = window.useBreakpoint();
   return (
     <div style={{border:`1px solid ${open===id?color+'55':t.border}`,borderRadius:12,overflow:'hidden',marginBottom:10,transition:'border-color .2s'}}>
       <button onClick={()=>setOpen(open===id?null:id)} style={{width:'100%',padding:'14px 18px',background:open===id?color+'13':t.surface,border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between',transition:'background .2s'}}>
@@ -56,7 +57,7 @@ function CalcScope({t, id, title, sub, color, val, open, setOpen, children}){
           <span style={{color:t.textMuted,transform:open===id?'rotate(180deg)':'none',transition:'transform .22s',display:'block'}}>▾</span>
         </div>
       </button>
-      {open===id&&<div style={{padding:18,background:t.card,display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>{children}</div>}
+      {open===id&&<div style={{padding:18,background:t.card,display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 1fr':'1fr',gap:14}}>{children}</div>}
     </div>
   );
 }
@@ -106,6 +107,7 @@ window.EsgLegend = EsgLegend;
 
 function EcoCalculator({t, lang, go}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   const GRIDS = window.GRIDS, HF = window.HOME_FACTORS, GC = window.GRADE_COLORS(t);
   const SAVE_KEY='ei_calc_v1', HSAVE_KEY='ei_calc_home_v1', MODE_KEY='ei_calc_mode';
   const saved  = (()=>{ try{ return JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'); }catch(e){ return {}; } })();
@@ -215,7 +217,7 @@ function EcoCalculator({t, lang, go}) {
 
   return (
     <section id="calculadora" style={{background:t.bg,padding:'96px 0',borderTop:`1px solid ${t.border}`,scrollMarginTop:84}}>
-      <div style={{maxWidth:1180,margin:'0 auto',padding:'0 32px'}}>
+      <div style={{maxWidth:1180,margin:'0 auto',padding:bp==='sm'?'0 18px':'0 32px'}}>
         <Reveal>
         <div style={{marginBottom:30}}>
           <div style={{display:'inline-flex',alignItems:'center',gap:8,background:t.accentDim,border:`1px solid ${t.accent}35`,borderRadius:20,padding:'5px 14px',marginBottom:18}}>
@@ -234,12 +236,12 @@ function EcoCalculator({t, lang, go}) {
         </div>
         </Reveal>
 
-        <div style={{display:'grid',gridTemplateColumns:'1fr 355px',gap:32,alignItems:'start'}}>
+        <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 355px':'1fr',gap:32,alignItems:'start'}}>
           <Reveal>
           <div>
             {mode==='empresa' ? (
             <React.Fragment>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:18}}>
+              <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 1fr':'1fr',gap:14,marginBottom:18}}>
                 <CalcSelect t={t} label={L('Sector / Industria','Sector / Industry')} value={industry} onChange={e=>setIndustry(e.target.value)} options={industries}/>
                 <CalcSelect t={t} label={L('Factor red eléctrica','Grid factor')} value={country} onChange={e=>setCountry(e.target.value)} options={gridOptions}/>
               </div>
@@ -266,7 +268,7 @@ function EcoCalculator({t, lang, go}) {
             </React.Fragment>
             ) : (
             <React.Fragment>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:18}}>
+              <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 1fr':'1fr',gap:14,marginBottom:18}}>
                 <CalcField t={t} label={L('Personas en el hogar','People in household')} value={people} onChange={e=>setPeople(e.target.value)} unit={L('pers.','ppl')}/>
                 <CalcSelect t={t} label={L('Factor red eléctrica','Grid factor')} value={hcountry} onChange={e=>setHcountry(e.target.value)} options={gridOptions}/>
               </div>
@@ -299,7 +301,7 @@ function EcoCalculator({t, lang, go}) {
             {/* EQUIVALENCES (shared) */}
             <div style={{marginTop:26}}>
               <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:t.textMuted,marginBottom:14,fontFamily:'Plus Jakarta Sans'}}>{L('Equivalencias del mundo real','Real-world equivalences')}</div>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:10}}>
+              <div style={{display:'grid',gridTemplateColumns:bp==='sm'?'repeat(3,1fr)':'repeat(5,1fr)',gap:10}}>
                 {EQ.map(e=>(
                   <div key={e.k} style={{background:t.card,border:`1px solid ${t.border}`,borderRadius:12,padding:'14px 12px',textAlign:'center'}}>
                     <div style={{fontSize:20,marginBottom:7}}>{e.ic}</div>
@@ -314,7 +316,7 @@ function EcoCalculator({t, lang, go}) {
           </Reveal>
 
           {/* Results Panel */}
-          <div style={{position:'sticky',top:100,background:t.card,border:`1px solid ${t.border}`,borderRadius:20,padding:26}}>
+          <div style={{position:bp!=='sm'?'sticky':'static',top:100,background:t.card,border:`1px solid ${t.border}`,borderRadius:20,padding:26}}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
               <span style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:t.textMuted,fontFamily:'Plus Jakarta Sans'}}>{L('Resultado estimado','Estimated result')}</span>
               <span style={{fontSize:10,fontWeight:700,color:t.accent,fontFamily:'Plus Jakarta Sans',background:t.accentDim,border:`1px solid ${t.accent}33`,borderRadius:20,padding:'3px 10px'}}>{mode==='empresa'?L('Empresa','Company'):L('Hogar','Household')}</span>
@@ -371,6 +373,7 @@ window.EcoCalculator = EcoCalculator;
 /* ═══ PDF REPORT PREVIEW ═══ */
 function EcoReport({t, lang, data, go}) {
   const L = window.makeL(lang);
+  const bp = window.useBreakpoint();
   React.useEffect(()=>{ window.scrollTo(0,0); },[]);
   if(!data){ go('calculator'); return null; }
   const {tot,gr,eq,sector,date} = data;
@@ -406,7 +409,7 @@ function EcoReport({t, lang, data, go}) {
   return (
     <div style={{background:t.bg,minHeight:'100vh',paddingTop:84,paddingBottom:70}}>
       {/* toolbar */}
-      <div style={{maxWidth:820,margin:'0 auto 18px',padding:'0 24px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+      <div style={{maxWidth:820,margin:'0 auto 18px',padding:bp==='sm'?'0 16px':'0 24px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap'}}>
         <button onClick={()=>go('calculator')} style={{display:'inline-flex',alignItems:'center',gap:8,background:'transparent',border:`1px solid ${t.border}`,color:t.textMuted,fontSize:13,fontWeight:600,fontFamily:'Plus Jakarta Sans',padding:'8px 16px',borderRadius:20,cursor:'pointer'}}>← {L('Volver a la calculadora','Back to calculator')}</button>
         <div style={{display:'flex',gap:10}}>
           <button onClick={()=>window.print()} style={{background:'transparent',border:`1px solid ${t.borderStrong}`,color:t.text,fontSize:13,fontWeight:700,fontFamily:'Plus Jakarta Sans',padding:'9px 18px',borderRadius:9,cursor:'pointer'}}>{L('Imprimir','Print')}</button>
@@ -416,7 +419,7 @@ function EcoReport({t, lang, data, go}) {
       </div>
 
       {/* PAPER */}
-      <div style={{maxWidth:820,margin:'0 auto',padding:'0 24px'}}>
+      <div style={{maxWidth:820,margin:'0 auto',padding:bp==='sm'?'0 16px':'0 24px'}}>
         <div className="paper-print" style={{background:'#FFFFFF',borderRadius:6,overflow:'hidden',boxShadow:'0 30px 80px rgba(0,0,0,.4)',fontFamily:'DM Sans,sans-serif'}}>
           {/* header band */}
           <div style={{background:'#0D1C32',padding:'26px 40px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
@@ -464,7 +467,7 @@ function EcoReport({t, lang, data, go}) {
 
             {/* equivalences */}
             <div style={{fontSize:11,color:INK,textTransform:'uppercase',letterSpacing:'.1em',fontWeight:700,fontFamily:'Plus Jakarta Sans',marginBottom:14}}>{L('Equivalencias','Equivalences')}</div>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:10,marginBottom:30}}>
+            <div style={{display:'grid',gridTemplateColumns:bp==='sm'?'repeat(3,1fr)':'repeat(5,1fr)',gap:10,marginBottom:30}}>
               {[['🌳',eq.trees,L('árboles/año','trees/yr')],['⛽',eq.fuel,L('litros','litres')],['🚗',eq.km,L('km auto','car km')],['🔋',eq.phone,L('cargas móvil','phone chg')],['⚡',eq.kwh,L('kWh','kWh')]].map(([ic,val,lb],i)=>(
                 <div key={i} style={{border:`1px solid ${LINE}`,borderRadius:10,padding:'14px 8px',textAlign:'center'}}>
                   <div style={{fontSize:18,marginBottom:6}}>{ic}</div>
@@ -476,7 +479,7 @@ function EcoReport({t, lang, data, go}) {
 
             {/* recommendations */}
             <div style={{fontSize:11,color:INK,textTransform:'uppercase',letterSpacing:'.1em',fontWeight:700,fontFamily:'Plus Jakarta Sans',marginBottom:14}}>{L('Recomendaciones','Recommendations')}</div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:30}}>
+            <div style={{display:'grid',gridTemplateColumns:bp!=='sm'?'1fr 1fr':'1fr',gap:12,marginBottom:30}}>
               {recs.map((r,i)=>(
                 <div key={i} style={{display:'flex',gap:11,alignItems:'flex-start'}}>
                   <span style={{flexShrink:0,width:22,height:22,borderRadius:6,background:'#E8F4EE',color:GREEN,fontSize:12,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Plus Jakarta Sans'}}>{i+1}</span>
